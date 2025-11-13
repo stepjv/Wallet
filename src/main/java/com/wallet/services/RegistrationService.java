@@ -2,11 +2,16 @@ package com.wallet.services;
 
 import com.wallet.models.User;
 import com.wallet.repositories.UserRepository;
+import com.wallet.util.IsExistException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Service
+@Transactional(readOnly = true)
 public class RegistrationService {
 
     private final PasswordEncoder passwordEncoder;
@@ -19,10 +24,22 @@ public class RegistrationService {
         this.userRepository = userRepository;
     }
 
-    public void reg(String email, String password) {
-        User user = new User();
-
-        user.setEmail(email);
-        user.setPassword(passwordEncoder.encode(password));
+    @Transactional
+    public User reg(User user) {
+        if(userIsExist(user)) {
+            user.setPassword(
+                    passwordEncoder.encode(user.getPassword())
+            );
+            userRepository.save(user);
+            return user;
+        }
+        throw new IsExistException("User with this email is exist!");
     }
+
+    public boolean userIsExist(User user) {
+        return Optional.ofNullable(userRepository.findByEmail(user.getEmail())).isPresent();
+    }
+
 }
+
+
