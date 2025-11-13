@@ -12,7 +12,7 @@ import java.sql.Timestamp;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "profile")
-public class Profile {
+public class ProfileEntity {
     @Id
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,5 +26,5 @@ public class Profile {
 
     @OneToOne
     @JoinColumn(name = "FK_profile_user", referencedColumnName = "id")
-    User user;
+    UserEntity userEntity;
 }

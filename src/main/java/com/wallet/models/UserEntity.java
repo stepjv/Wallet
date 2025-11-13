@@ -12,18 +12,24 @@ import java.sql.Timestamp;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "users")
-public class User {
+public class UserEntity {
     @Id
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    int id;
+    private int id;
 
     @Column(name = "email")
-    String email;
+    private String email;
 
     @Column(name = "password")
-    String password;
+    private String password;
 
     @Column(name = "created_at")
-    Timestamp createdAt;
+    private Timestamp createdAt;
+
+    public UserEntity(String email, String password) {
+        this.email = email;
+        this.password = password;
+//        this.createdAt = Timestamp
+    }
 }

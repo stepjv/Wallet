@@ -1,31 +1,24 @@
 package com.wallet.controllers;
 
-import com.wallet.models.User;
-import com.wallet.services.RegistrationService;
+import com.wallet.dto.SignUpRequest;
+import com.wallet.services.AuthService;
 import com.wallet.util.ErrorResponse;
 import com.wallet.util.IsExistException;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
+@RequiredArgsConstructor
 public class AuthController {
 
-    private final RegistrationService registrationService;
-
-    @Autowired
-    public AuthController(RegistrationService registrationService) {
-        this.registrationService = registrationService;
-    }
-
-
+    private final AuthService authService;
 
     @PostMapping("/signup")
-    public ResponseEntity<?> registration(@RequestBody User user) {
-        registrationService.reg(user);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+    public void signUp(@RequestBody SignUpRequest request) {
+        authService.signUp(request);
     }
 
     @ExceptionHandler

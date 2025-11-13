@@ -1,6 +1,6 @@
 package com.wallet.security;
 
-import com.wallet.models.User;
+import com.wallet.models.UserEntity;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -11,10 +11,10 @@ import java.util.List;
 @Getter
 public class WalletUserDetails implements UserDetails {
 
-    private final User user;
+    private final UserEntity userEntity;
 
-    public WalletUserDetails(User user) {
-        this.user = user;
+    public WalletUserDetails(UserEntity userEntity) {
+        this.userEntity = userEntity;
     }
 
     @Override
@@ -24,12 +24,12 @@ public class WalletUserDetails implements UserDetails {
 
     @Override
     public String getPassword() {
-        return user.getPassword();
+        return userEntity.getPassword();
     }
 
     @Override
     public String getUsername() {
-        return user.getEmail();
+        return userEntity.getEmail();
     }
 
     @Override
