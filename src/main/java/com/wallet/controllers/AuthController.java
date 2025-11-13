@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequestMapping("/auth")
 public class AuthController {
 
     private final RegistrationService registrationService;
@@ -22,9 +23,9 @@ public class AuthController {
 
 
     @PostMapping("/signup")
-    public ResponseEntity<User> registration(@RequestBody User user) {
-        User newUser = registrationService.reg(user);
-        return ResponseEntity.status(HttpStatus.CREATED).body(newUser);
+    public ResponseEntity<?> registration(@RequestBody User user) {
+        registrationService.reg(user);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @ExceptionHandler
