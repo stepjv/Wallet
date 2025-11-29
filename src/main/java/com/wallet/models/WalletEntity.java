@@ -19,12 +19,16 @@ public class WalletEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
+    @Column(name = "wallet_number")
     private String number;
 
+    @Column(name = "balance")
     private DecimalFormat balance;
 
+    @Column(name = "description")
     private String description;
 
+    @Column(name = "created_at")
     private Timestamp createdAt;
 
     @OneToOne
