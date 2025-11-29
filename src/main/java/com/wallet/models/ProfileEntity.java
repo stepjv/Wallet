@@ -16,15 +16,15 @@ public class ProfileEntity {
     @Id
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    int id;
+    private int id;
 
     @Column(name = "full_name")
-    String fullName;
+    private String fullName;
 
     @Column(name = "created_at")
-    Timestamp createdAt;
+    private Timestamp createdAt;
 
     @OneToOne
     @JoinColumn(name = "FK_profile_user", referencedColumnName = "id")
-    UserEntity userEntity;
+    private UserEntity user;
 }
