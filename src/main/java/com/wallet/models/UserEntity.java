@@ -32,4 +32,8 @@ public class UserEntity {
         this.password = password;
 //        this.createdAt = Timestamp
     }
+
+    public UserEntity(int id) {
+        this.id = id;
+    }
 }

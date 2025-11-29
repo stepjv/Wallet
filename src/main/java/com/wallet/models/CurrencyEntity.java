@@ -21,4 +21,8 @@ public class CurrencyEntity {
 
     @Column(name = "code")
     private String code;
+
+    public CurrencyEntity(int id) {
+        this.id = id;
+    }
 }

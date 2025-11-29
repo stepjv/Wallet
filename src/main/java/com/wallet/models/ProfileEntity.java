@@ -27,4 +27,10 @@ public class ProfileEntity {
     @OneToOne
     @JoinColumn(name = "FK_profile_user", referencedColumnName = "id")
     private UserEntity user;
+
+    public ProfileEntity(String fullName, Timestamp createdAt, int userId) {
+        this.fullName = fullName;
+        this.createdAt = createdAt;
+        this.user = new UserEntity(userId);
+    }
 }

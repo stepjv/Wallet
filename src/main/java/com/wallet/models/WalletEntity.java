@@ -3,8 +3,8 @@ package com.wallet.models;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.text.DecimalFormat;
 
 @Entity
 @Getter
@@ -23,7 +23,7 @@ public class WalletEntity {
     private String number;
 
     @Column(name = "balance")
-    private DecimalFormat balance;
+    private BigDecimal balance;
 
     @Column(name = "description")
     private String description;
@@ -38,4 +38,11 @@ public class WalletEntity {
     @OneToOne
     @JoinColumn(name = "FK_wallet_profile", referencedColumnName = "id")
     private ProfileEntity profile;
+
+    public WalletEntity(String number, Timestamp createdAt, int currencyId, ProfileEntity profile) {
+        this.number = number;
+        this.createdAt = createdAt;
+        this.currency = new CurrencyEntity(currencyId);
+        this.profile = profile;
+    }
 }

@@ -1,4 +1,4 @@
-package com.wallet.util;
+package com.wallet.util.exceptions;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -2,8 +2,8 @@ package com.wallet.controllers;
 
 import com.wallet.dto.SignUpRequest;
 import com.wallet.services.AuthService;
-import com.wallet.util.ErrorResponse;
-import com.wallet.util.IsExistException;
+import com.wallet.util.exceptions.ErrorResponse;
+import com.wallet.util.exceptions.IsExistException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
