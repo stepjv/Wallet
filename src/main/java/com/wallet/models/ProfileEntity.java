@@ -2,8 +2,7 @@ package com.wallet.models;
 
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.sql.Timestamp;
+import java.time.Instant;
 
 @Entity
 @Getter
@@ -22,15 +21,13 @@ public class ProfileEntity {
     private String fullName;
 
     @Column(name = "created_at")
-    private Timestamp createdAt;
+    private Instant createdAt;
 
     @OneToOne
     @JoinColumn(name = "FK_profile_user", referencedColumnName = "id")
     private UserEntity user;
 
-    public ProfileEntity(String fullName, Timestamp createdAt, int userId) {
-        this.fullName = fullName;
-        this.createdAt = createdAt;
-        this.user = new UserEntity(userId);
+    public ProfileEntity(int id) {
+        this.id = id;
     }
 }

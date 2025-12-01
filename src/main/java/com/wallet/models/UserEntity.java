@@ -2,8 +2,7 @@ package com.wallet.models;
 
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.sql.Timestamp;
+import java.time.Instant;
 
 @Entity
 @Getter
@@ -25,12 +24,12 @@ public class UserEntity {
     private String password;
 
     @Column(name = "created_at")
-    private Timestamp createdAt;
+    private Instant createdAt;
 
-    public UserEntity(String email, String password) {
+    public UserEntity(String email, String password, Instant createdAt) {
         this.email = email;
         this.password = password;
-//        this.createdAt = Timestamp
+        this.createdAt = createdAt;
     }
 
     public UserEntity(int id) {

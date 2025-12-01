@@ -1,6 +1,6 @@
 package com.wallet.services;
 
-import com.wallet.dto.AddProfileRequest;
+import com.wallet.dto.NewProfileDTO;
 import com.wallet.models.ProfileEntity;
 import com.wallet.models.UserEntity;
 import com.wallet.repositories.ProfileRepository;
@@ -13,15 +13,17 @@ public class ProfileServiceImpl implements ProfileService{
 
     private final ProfileRepository profileRepository;
 
+
     @Override
-    public void add(AddProfileRequest request) {
-        final ProfileEntity newProfile = request.buildProfileEntity();
+    public void add(UserEntity user) {
+        final NewProfileDTO newProfileDTO = new NewProfileDTO();
+        final ProfileEntity newProfile = newProfileDTO.buildProfileEntity(user);
         profileRepository.save(newProfile);
     }
 
     @Override
     public ProfileEntity getByUserId(int userId) {
         UserEntity user = new UserEntity(userId);
-        return profileRepository.getProfileByUser(user);
+        return profileRepository.findProfileByUser(user);
     }
 }

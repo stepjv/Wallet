@@ -9,5 +9,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ProfileRepository extends JpaRepository<ProfileEntity, Integer> {
     @Query("SELECT u FROM ProfileEntity u WHERE u.user =:user")
-    ProfileEntity getProfileByUser(UserEntity user);
+    ProfileEntity findProfileByUser(UserEntity user);
 }

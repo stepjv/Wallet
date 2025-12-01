@@ -3,8 +3,7 @@ package com.wallet.models;
 import com.wallet.enums.TransactionStatus;
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.sql.Timestamp;
+import java.time.Instant;
 
 @Entity
 @Getter
@@ -32,7 +31,7 @@ public class TransactionEntity {
     private String description;
 
     @Column(name = "created_at")
-    private Timestamp createdAt;
+    private Instant createdAt;
 
     @OneToOne
     @JoinColumn(name = "FK_transaction_sender_wallet", referencedColumnName = "id")

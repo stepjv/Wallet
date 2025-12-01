@@ -4,7 +4,6 @@ import com.wallet.dto.AddWalletRequest;
 import com.wallet.models.ProfileEntity;
 import com.wallet.models.WalletEntity;
 import com.wallet.repositories.WalletRepository;
-import com.wallet.temp.TemporaryGetCurrentUserId;
 import com.wallet.util.WalletNumberGenerator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,10 +16,10 @@ public class WalletServiceImpl implements WalletService {
     private final ProfileService profileService;
 
     @Override
-    public void add(AddWalletRequest request) {
+    public void add(int userId, AddWalletRequest request) {
         String walletNumber = generateUniqueNumber();
-        int currentUserId = TemporaryGetCurrentUserId.getCurrentUserId();
-        final ProfileEntity profile = profileService.getByUserId(currentUserId);
+
+        final ProfileEntity profile = profileService.getByUserId(userId);
 
         final WalletEntity wallet = request.buildWalletEntity(walletNumber, profile);
 
@@ -30,7 +29,7 @@ public class WalletServiceImpl implements WalletService {
 
     private String generateUniqueNumber() {
         String uniqueNumber = WalletNumberGenerator.getNumber();
-        while (walletRepository.existWalletWithNumber(uniqueNumber)) {
+        while (walletRepository.existWithNumber(uniqueNumber)) {
             uniqueNumber = WalletNumberGenerator.getNumber();
         }
         return uniqueNumber;

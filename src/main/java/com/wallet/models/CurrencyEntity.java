@@ -25,4 +25,9 @@ public class CurrencyEntity {
     public CurrencyEntity(int id) {
         this.id = id;
     }
+
+    public CurrencyEntity(String name, String code) {
+        this.name = name;
+        this.code = code;
+    }
 }
