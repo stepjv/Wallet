@@ -3,13 +3,15 @@ package com.wallet.models;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.Instant;
+
 @Entity
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "currencies")
+@Table(name = "currency")
 public class CurrencyEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,6 +24,10 @@ public class CurrencyEntity {
     @Column(name = "code")
     private String code;
 
+    @Column(name = "created_at") // понять в какой момент времени было
+    private Instant createdAt;
+
+
     public CurrencyEntity(int id) {
         this.id = id;
     }
@@ -29,5 +35,6 @@ public class CurrencyEntity {
     public CurrencyEntity(String name, String code) {
         this.name = name;
         this.code = code;
+        this.createdAt = Instant.now();
     }
 }

@@ -3,6 +3,8 @@ package com.wallet.models;
 import com.wallet.enums.TransactionStatus;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.math.BigDecimal;
 import java.time.Instant;
 
 @Entity
@@ -11,7 +13,7 @@ import java.time.Instant;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "profile")
+@Table(name = "transaction")
 public class TransactionEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,10 +24,11 @@ public class TransactionEntity {
     private String number;
 
     @Column(name = "transferred_money")
-    private String moneyCount;
+    private BigDecimal moneyCount;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    private Enum<TransactionStatus> status;
+    private TransactionStatus status;
 
     @Column(name = "description")
     private String description;
@@ -33,11 +36,19 @@ public class TransactionEntity {
     @Column(name = "created_at")
     private Instant createdAt;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "FK_transaction_sender_wallet", referencedColumnName = "id")
     private WalletEntity senderWallet;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "FK_transaction_payee_wallet", referencedColumnName = "id")
     private WalletEntity payeeWallet;
+
+    public TransactionEntity(String number, BigDecimal moneyCount, TransactionStatus status, String description, int walletId) {
+        this.number = number;
+        this.moneyCount = moneyCount;
+        this.description = description;
+        this.payeeWallet = new WalletEntity(walletId);
+        this.status = status;
+    }
 }

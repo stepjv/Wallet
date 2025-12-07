@@ -12,6 +12,7 @@ import java.time.Instant;
 @AllArgsConstructor
 @Table(name = "profile")
 public class ProfileEntity {
+
     @Id
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,5 +30,11 @@ public class ProfileEntity {
 
     public ProfileEntity(int id) {
         this.id = id;
+    }
+
+    public ProfileEntity(String fullName, UserEntity user) {
+        this.fullName = fullName;
+        this.user = user;
+        this.createdAt = Instant.now();
     }
 }

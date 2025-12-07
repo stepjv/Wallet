@@ -1,7 +1,9 @@
 package com.wallet.services;
 
-import com.wallet.dto.SignUpRequest;
+import com.wallet.dto.UserSignUpRequest;
 
 public interface AuthService {
-    void signUp(SignUpRequest request);
+
+    /// API !  нужно тестить в IT
+    int signUp(UserSignUpRequest request);
 }

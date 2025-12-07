@@ -1,61 +1,80 @@
 package com.wallet.config;
 
-import com.wallet.dto.AddCurrencyRequest;
-import com.wallet.dto.SignUpRequest;
+import com.wallet.config.entity.CurrencyTestObj;
+import com.wallet.config.entity.ProfileTestObj;
+import com.wallet.config.entity.UserTestObj;
+import com.wallet.dto.CurrencyAddRequest;
+import com.wallet.dto.UserSignUpRequest;
 import com.wallet.models.UserEntity;
 import com.wallet.services.AuthService;
 import com.wallet.services.CurrencyService;
 import com.wallet.services.ProfileService;
 import com.wallet.util.exceptions.IsExistException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 
 import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.List;
 
-@Configuration
+@Component
 @RequiredArgsConstructor
 public class EnvironmentService {
 
     private static final String LETTERS_UPPERCASE = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     private static final String LETTERS_LOWERCASE = "abcdefghijklmnopqrstuvwxyz";
     private static final String DIGITS = "0123456789";
+    private static final String EMAIL_DOMAIN = "@mail.ru";
+
     private final AuthService authService;
     private final ProfileService profileService;
     private final CurrencyService currencyService;
     private static final int CURRENCY_CODE_LENGTH = 3;
 
-    public void initializeUsers(int amountUsers) {
+   // public class GenerateTestUsersObj
+  // {
+     // вернуть список тестовых обьктов 1 пользователя List<UserTestObj>
+  // }
+
+    public List<UserTestObj> initializeUsers(int amountUsers) {
+        List<UserTestObj> users = new ArrayList<>();
+
         final int passwordLength = 10;
+
         for (int i = 0; i < amountUsers; i++) {
-            SignUpRequest request = new SignUpRequest(
+            UserSignUpRequest request = new UserSignUpRequest(
                     generateEmail(),
                     getRandomString(LETTERS_LOWERCASE, passwordLength)
             );
             try {
-                authService.signUp(request);
+                int userId = authService.signUp(request);
+                users.add(new UserTestObj(userId));
             } catch (IsExistException e) {
                 i--;
             }
-
         }
+        return users;
     }
 
-    public void initializeProfilesWithUsers(int amountProfiles, int amountUsers) {
-        initializeUsers(amountUsers);
+    public List<ProfileTestObj> initializeProfiles(int amountProfiles) {
+        List<UserTestObj> users = initializeUsers(amountProfiles);
+        List<ProfileTestObj> profiles = new ArrayList<>();
 
-        if (amountProfiles > amountUsers) {
-            amountProfiles = amountUsers;
+        for (UserTestObj user : users) {
+            int profileId = profileService.create(new UserEntity(user.getId()));
+            profiles.add(new ProfileTestObj(profileId, user));
         }
 
-        for (int userId = 0; userId < amountProfiles; userId++) {
-            profileService.add(new UserEntity(userId));
-        }
+        return profiles;
     }
 
-    public void initializeCurrencies(int amountCurrencies) {
+    public List<CurrencyTestObj> initializeCurrencies(int amountCurrencies) {
+        List<CurrencyTestObj> currencies = new ArrayList<>();
+
         final int nameLength = 5;
+
         for (int i = 0; i < amountCurrencies; i++) {
-            AddCurrencyRequest request = new AddCurrencyRequest(
+            CurrencyAddRequest request = new CurrencyAddRequest(
                     getRandomString(LETTERS_LOWERCASE, nameLength),
                     getRandomString(LETTERS_UPPERCASE, CURRENCY_CODE_LENGTH)
             );
@@ -64,14 +83,14 @@ public class EnvironmentService {
             } catch (IsExistException e) {
                 i--;
             }
-
         }
+
+        return currencies;
     }
 
     private String generateEmail() {
         final int emailNameLength = 5;
-        return getRandomString(LETTERS_LOWERCASE, emailNameLength) +
-                "@mail.ru";
+        return getRandomString(LETTERS_LOWERCASE, emailNameLength) + EMAIL_DOMAIN;
     }
 
     private String getRandomString(String characters, int length) {

@@ -4,7 +4,10 @@ import com.wallet.models.ProfileEntity;
 import com.wallet.models.UserEntity;
 
 public interface ProfileService {
-    void add(UserEntity request);
+    /// API
+
+    /// HELP
+    int create(UserEntity user);
 
     ProfileEntity getByUserId(int userId);
 }

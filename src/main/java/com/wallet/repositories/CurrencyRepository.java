@@ -7,8 +7,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface CurrencyRepository extends JpaRepository<CurrencyEntity, Integer> {
-    @Query("SELECT currency FROM CurrencyEntity currency WHERE currency.code = :currencyCode ")
-    CurrencyEntity findByCode(String currencyCode);
 
     @Query("SELECT COUNT(c) > 0 FROM CurrencyEntity c WHERE c.name = :name AND c.code = :code")
     boolean existsByNameAndCode(String name, String code);

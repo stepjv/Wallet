@@ -1,6 +1,6 @@
 package com.wallet.controllers;
 
-import com.wallet.dto.SignUpRequest;
+import com.wallet.dto.UserSignUpRequest;
 import com.wallet.services.AuthService;
 import com.wallet.util.exceptions.ErrorResponse;
 import com.wallet.util.exceptions.IsExistException;
@@ -17,7 +17,7 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/signup")
-    public void signUp(@RequestBody SignUpRequest request) {
+    public void signUp(@RequestBody UserSignUpRequest request) {
         authService.signUp(request);
     }
 

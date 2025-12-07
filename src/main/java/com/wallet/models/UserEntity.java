@@ -2,6 +2,7 @@ package com.wallet.models;
 
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.Instant;
 
 @Entity
@@ -10,7 +11,7 @@ import java.time.Instant;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "users")
+@Table(name = "user")
 public class UserEntity {
     @Id
     @Column(name = "id")
@@ -26,13 +27,18 @@ public class UserEntity {
     @Column(name = "created_at")
     private Instant createdAt;
 
-    public UserEntity(String email, String password, Instant createdAt) {
+    public UserEntity(String email, String password) {
         this.email = email;
         this.password = password;
-        this.createdAt = createdAt;
+        this.createdAt = Instant.now();
     }
 
     public UserEntity(int id) {
         this.id = id;
+    }
+
+    public ProfileEntity buildProfileEntity() {
+        final String name = "guest";
+        return new ProfileEntity(name, this);
     }
 }

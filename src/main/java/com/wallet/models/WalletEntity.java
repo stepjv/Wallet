@@ -11,15 +11,19 @@ import java.time.Instant;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "wallets")
+@Table(name = "wallet")
 public class WalletEntity {
+
     @Id
     @Column(name="id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @Column(name = "wallet_number")
-    private String number;
+    @Column(name = "uuid")
+    private String uuid; // для api
+
+    @Column(name = "check") // счет который пользователь видит (чувствительные данные)
+    private String check;
 
     @Column(name = "balance")
     private BigDecimal balance;
@@ -38,10 +42,15 @@ public class WalletEntity {
     @JoinColumn(name = "FK_wallet_profile", referencedColumnName = "id")
     private ProfileEntity profile;
 
-    public WalletEntity(String number, Instant createdAt, int currencyId, ProfileEntity profile) {
-        this.number = number;
-        this.createdAt = createdAt;
+    public WalletEntity(String number, int currencyId, ProfileEntity profile, String uuid) {
+        this.check = number;
+        this.createdAt = Instant.now();
         this.currency = new CurrencyEntity(currencyId);
         this.profile = profile;
+        this.uuid = uuid;
+    }
+
+    public WalletEntity(int id) {
+        this.id = id;
     }
 }
