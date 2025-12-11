@@ -3,12 +3,14 @@ package com.wallet.config;
 import com.wallet.config.entity.CurrencyTestObj;
 import com.wallet.config.entity.ProfileTestObj;
 import com.wallet.config.entity.UserTestObj;
-import com.wallet.dto.CurrencyAddRequest;
-import com.wallet.dto.UserSignUpRequest;
-import com.wallet.models.UserEntity;
+import com.wallet.config.entity.WalletTestObj;
+import com.wallet.dto.request.CurrencyAddRequest;
+import com.wallet.dto.request.UserSignUpRequest;
+import com.wallet.dto.request.WalletCreateRequest;
 import com.wallet.services.AuthService;
 import com.wallet.services.CurrencyService;
 import com.wallet.services.ProfileService;
+import com.wallet.services.WalletService;
 import com.wallet.util.exceptions.IsExistException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Component;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
+
 
 @Component
 @RequiredArgsConstructor
@@ -25,18 +28,16 @@ public class EnvironmentService {
     private static final String LETTERS_LOWERCASE = "abcdefghijklmnopqrstuvwxyz";
     private static final String DIGITS = "0123456789";
     private static final String EMAIL_DOMAIN = "@mail.ru";
+    private static final int CURRENCY_CODE_LENGTH = 3;
+    private static final int CURRENCY_NAME_LENGTH = 5;
 
     private final AuthService authService;
     private final ProfileService profileService;
     private final CurrencyService currencyService;
-    private static final int CURRENCY_CODE_LENGTH = 3;
+    private final WalletService walletService;
 
-   // public class GenerateTestUsersObj
-  // {
-     // вернуть список тестовых обьктов 1 пользователя List<UserTestObj>
-  // }
 
-    public List<UserTestObj> initializeUsers(int amountUsers) {
+    public List<UserTestObj> initializeSignUp(int amountUsers) {
         List<UserTestObj> users = new ArrayList<>();
 
         final int passwordLength = 10;
@@ -57,11 +58,11 @@ public class EnvironmentService {
     }
 
     public List<ProfileTestObj> initializeProfiles(int amountProfiles) {
-        List<UserTestObj> users = initializeUsers(amountProfiles);
+        List<UserTestObj> users = initializeSignUp(amountProfiles);
         List<ProfileTestObj> profiles = new ArrayList<>();
 
         for (UserTestObj user : users) {
-            int profileId = profileService.create(new UserEntity(user.getId()));
+            int profileId = profileService.getByUserId(user.getId()).getId();
             profiles.add(new ProfileTestObj(profileId, user));
         }
 
@@ -71,21 +72,46 @@ public class EnvironmentService {
     public List<CurrencyTestObj> initializeCurrencies(int amountCurrencies) {
         List<CurrencyTestObj> currencies = new ArrayList<>();
 
-        final int nameLength = 5;
-
         for (int i = 0; i < amountCurrencies; i++) {
-            CurrencyAddRequest request = new CurrencyAddRequest(
-                    getRandomString(LETTERS_LOWERCASE, nameLength),
-                    getRandomString(LETTERS_UPPERCASE, CURRENCY_CODE_LENGTH)
-            );
-            try {
-                currencyService.add(request);
-            } catch (IsExistException e) {
-                i--;
-            }
+            currencies.add(initializeOneCurrency());
         }
 
         return currencies;
+    }
+
+    public CurrencyTestObj initializeOneCurrency() {
+        CurrencyTestObj currency = null;
+        while (true) {
+
+            CurrencyAddRequest request = new CurrencyAddRequest(
+                    getRandomString(LETTERS_LOWERCASE, CURRENCY_NAME_LENGTH),
+                    getRandomString(LETTERS_UPPERCASE, CURRENCY_CODE_LENGTH)
+            );
+            try {
+                int currencyId = currencyService.add(request);
+
+                currency = new CurrencyTestObj(currencyId);
+            } catch (IsExistException e) {}
+
+            break;
+        }
+        return currency;
+    }
+
+    public List<WalletTestObj> initializeWallet(int amountWallets) {
+        CurrencyTestObj currency = initializeOneCurrency();
+        List<ProfileTestObj> profiles = initializeProfiles(amountWallets);
+        List<WalletTestObj> wallets = new ArrayList<>();
+
+        for (ProfileTestObj profile : profiles) {
+            int walletId = walletService.create(
+                    profile.getUser().getId(),
+                    new WalletCreateRequest(currency.getId())
+            );
+            wallets.add(new WalletTestObj(walletId, currency, profile));
+        }
+
+        return wallets;
     }
 
     private String generateEmail() {

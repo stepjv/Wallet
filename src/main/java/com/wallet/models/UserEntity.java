@@ -11,7 +11,7 @@ import java.time.Instant;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "user")
+@Table(name = "users")
 public class UserEntity {
     @Id
     @Column(name = "id")
@@ -40,5 +40,15 @@ public class UserEntity {
     public ProfileEntity buildProfileEntity() {
         final String name = "guest";
         return new ProfileEntity(name, this);
+    }
+
+    @Override
+    public String toString() {
+        return "UserEntity {" +
+                "\n\tid = " + id +
+                ", \n\temail = " + email +
+                ", \n\tpassword = " + password +
+                ", \n\tcreatedAt = " + createdAt +
+                "\n}";
     }
 }

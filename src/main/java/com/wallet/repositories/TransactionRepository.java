@@ -5,9 +5,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface TransactionRepository extends JpaRepository<TransactionEntity, Integer> {
 
     @Query("SELECT COUNT(t) > 0 FROM TransactionEntity t WHERE t.number = :uniqueNumber")
     boolean existWithNumber(String uniqueNumber);
+
+    @Query("SELECT t FROM TransactionEntity t WHERE t.payeeWallet.id = :walletId OR t.senderWallet.id = :walletId")
+    List<TransactionEntity> findAllByWalletId(int walletId);
 }

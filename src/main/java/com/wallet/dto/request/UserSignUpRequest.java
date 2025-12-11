@@ -1,4 +1,4 @@
-package com.wallet.dto;
+package com.wallet.dto.request;
 
 import com.wallet.models.UserEntity;
 

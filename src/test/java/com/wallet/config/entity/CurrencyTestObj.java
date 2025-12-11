@@ -1,14 +1,10 @@
 package com.wallet.config.entity;
 
-import jakarta.persistence.Entity;
 import lombok.*;
 
 import java.time.Instant;
 
-@Entity
-@Getter
-@Setter
-@Builder
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class CurrencyTestObj {

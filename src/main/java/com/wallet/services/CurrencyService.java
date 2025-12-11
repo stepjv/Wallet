@@ -1,6 +1,6 @@
 package com.wallet.services;
 
-import com.wallet.dto.CurrencyAddRequest;
+import com.wallet.dto.request.CurrencyAddRequest;
 
 public interface CurrencyService {
 

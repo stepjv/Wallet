@@ -1,6 +1,8 @@
 package com.wallet.services.impl;
 
-import com.wallet.dto.WalletCreateRequest;
+import com.wallet.dto.request.WalletCreateRequest;
+import com.wallet.dto.WalletDTO;
+import com.wallet.enums.RequestStatus;
 import com.wallet.models.ProfileEntity;
 import com.wallet.models.WalletEntity;
 import com.wallet.repositories.WalletRepository;
@@ -12,6 +14,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -23,46 +28,60 @@ public class WalletServiceImpl implements WalletService {
 
     @Override
     public int create(int userId, WalletCreateRequest request) {
-        String walletNumber = generateUniqueNumber();
+        String checkNumber = generateUniqueNumber();
 
-        UUID uuid = UUID.fromString(walletNumber);
+        UUID uuid = UUID.randomUUID();
 
         final ProfileEntity profile = profileService.getByUserId(userId);
 
-        final WalletEntity wallet = request.buildWalletEntity(walletNumber, profile, uuid);
+        final WalletEntity wallet = request.buildWalletEntity(checkNumber, profile, uuid);
 
         return walletRepository.save(wallet).getId();
     }
 
     @Override
-    public boolean changeBalance(int walletId, BigDecimal countOfMoney) {
+    public RequestStatus canTransfer(int walletId, BigDecimal countOfMoney, boolean transferable) {
         WalletEntity wallet = walletRepository.findById(walletId);
 
         try {
 
             BigDecimal newBalance = Validator.safeSumOfDecimal(wallet.getBalance(), countOfMoney);
-            wallet.setBalance(newBalance);
+            if (transferable) {
+                wallet.setBalance(newBalance);
+                walletRepository.save(wallet);
+            }
 
         } catch (ArithmeticException e) {
-            return false;
+            return RequestStatus.ARITHMETIC_ERROR;
+        } catch (Exception e) {
+            return RequestStatus.BD_ERROR;
         }
 
-        walletRepository.save(wallet);
-
-        return true;
+        return RequestStatus.OK;
     }
 
     @Override
-    public WalletEntity getWalletByUserId(int userId) {
+    public List<WalletDTO> getAllWalletsByUserId(int userId) {
         ProfileEntity profile = profileService.getByUserId(userId);
-        return walletRepository.findByProfileId(profile.getId());
+        List<WalletEntity> wallets = walletRepository.findAllByProfile(profile);
+        List<WalletDTO> walletDTOList = new ArrayList<>();
+
+        if (wallets.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        for (WalletEntity wallet : wallets) {
+            walletDTOList.add(new WalletDTO(wallet));
+        }
+
+        return walletDTOList;
     }
 
 
     private String generateUniqueNumber() {
-        String uniqueNumber = RandomNumberGenerator.getWalletNumber();
-        while (walletRepository.existWithNumber(uniqueNumber)) {
-            uniqueNumber = RandomNumberGenerator.getWalletNumber();
+        String uniqueNumber = RandomNumberGenerator.getWalletCheck();
+        while (walletRepository.existWithCheck(uniqueNumber)) {
+            uniqueNumber = RandomNumberGenerator.getWalletCheck();
         }
         return uniqueNumber;
     }

@@ -14,7 +14,7 @@ public class RandomNumberGenerator {
         return getRandomString(MIXED_STRING, 16);
     }
 
-    public static String getWalletNumber() {
+    public static String getWalletCheck() {
         return getRandomString(LETTERS, 2) +
                 getRandomString(DIGITS, 2) +
                 getRandomString(LETTERS, 2) +

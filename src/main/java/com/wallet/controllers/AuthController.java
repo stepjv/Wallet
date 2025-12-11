@@ -1,6 +1,6 @@
 package com.wallet.controllers;
 
-import com.wallet.dto.UserSignUpRequest;
+import com.wallet.dto.request.UserSignUpRequest;
 import com.wallet.services.AuthService;
 import com.wallet.util.exceptions.ErrorResponse;
 import com.wallet.util.exceptions.IsExistException;

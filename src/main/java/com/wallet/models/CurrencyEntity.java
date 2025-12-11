@@ -11,7 +11,7 @@ import java.time.Instant;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "currency")
+@Table(name = "currencies")
 public class CurrencyEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,5 +36,15 @@ public class CurrencyEntity {
         this.name = name;
         this.code = code;
         this.createdAt = Instant.now();
+    }
+
+    @Override
+    public String toString() {
+        return "CurrencyEntity {" +
+                "\n\tid = " + id +
+                ", \n\tname = " + name +
+                ", \n\tcode = " + code +
+                ", \n\tcreatedAt = " + createdAt +
+                "\n}";
     }
 }

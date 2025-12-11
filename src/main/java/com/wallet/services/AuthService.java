@@ -1,6 +1,6 @@
 package com.wallet.services;
 
-import com.wallet.dto.UserSignUpRequest;
+import com.wallet.dto.request.UserSignUpRequest;
 
 public interface AuthService {
 

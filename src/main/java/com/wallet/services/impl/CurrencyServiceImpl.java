@@ -1,6 +1,6 @@
 package com.wallet.services.impl;
 
-import com.wallet.dto.CurrencyAddRequest;
+import com.wallet.dto.request.CurrencyAddRequest;
 import com.wallet.models.CurrencyEntity;
 import com.wallet.repositories.CurrencyRepository;
 import com.wallet.services.CurrencyService;

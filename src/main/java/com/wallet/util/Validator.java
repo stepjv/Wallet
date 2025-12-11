@@ -7,7 +7,8 @@ import java.math.BigDecimal;
 @Component
 public class Validator {
 
-    private static final BigDecimal BALANCE_MAX_VALUE = new BigDecimal("99,999,999,999,999,999,999,999,999,999,999,999,999,999,999,999,999.99");
+    // 50.2
+    private static final BigDecimal BALANCE_MAX_VALUE = new BigDecimal("99999999999999999999999999999999999999999999999999.99");
 
     public static BigDecimal safeSumOfDecimal(BigDecimal a, BigDecimal b)
             throws ArithmeticException {
@@ -18,7 +19,7 @@ public class Validator {
             throw new ArithmeticException("Значение превышает максимально допустимое");
         }
 
-        if (sum.signum() != -1) {
+        if (sum.signum() == -1) {
             throw new ArithmeticException("Недостаточно средств");
         }
 

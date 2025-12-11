@@ -10,7 +10,7 @@ import java.time.Instant;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "profile")
+@Table(name = "profiles")
 public class ProfileEntity {
 
     @Id
@@ -36,5 +36,15 @@ public class ProfileEntity {
         this.fullName = fullName;
         this.user = user;
         this.createdAt = Instant.now();
+    }
+
+    @Override
+    public String toString() {
+        return "ProfileEntity {" +
+                "\n\tid = " + id +
+                ", \n\tfullName = " + fullName +
+                ", \n\tcreatedAt = " + createdAt +
+                ", \n\tuser = " + user.toString() +
+                "\n}";
     }
 }

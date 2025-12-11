@@ -1,6 +1,6 @@
 package com.wallet.services.impl;
 
-import com.wallet.dto.UserSignUpRequest;
+import com.wallet.dto.request.UserSignUpRequest;
 import com.wallet.models.UserEntity;
 import com.wallet.repositories.UserRepository;
 import com.wallet.services.AuthService;
