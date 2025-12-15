@@ -3,7 +3,6 @@ package com.wallet.dto;
 import com.wallet.enums.TransactionStatus;
 import com.wallet.enums.TransactionType;
 import com.wallet.models.TransactionEntity;
-import com.wallet.models.WalletEntity;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -18,8 +17,8 @@ public class TransactionDTO {
     private final TransactionType type;
     private final String description;
     private final Instant createdAt;
-    private final WalletEntity senderWallet;
-    private final WalletEntity payeeWallet;
+    private final WalletDTO senderWallet;
+    private final WalletDTO payeeWallet;
 
     public TransactionDTO(TransactionEntity t) {
         this.id = t.getId();
@@ -29,8 +28,8 @@ public class TransactionDTO {
         this.type = t.getType();
         this.description = t.getDescription();
         this.createdAt = t.getCreatedAt();
-        this.senderWallet = t.getSenderWallet();
-        this.payeeWallet = t.getPayeeWallet();
+        this.senderWallet = new WalletDTO(t.getSenderWallet());
+        this.payeeWallet = new WalletDTO(t.getPayeeWallet());
     }
 }
 

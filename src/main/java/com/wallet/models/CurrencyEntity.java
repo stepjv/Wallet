@@ -24,19 +24,29 @@ public class CurrencyEntity {
     @Column(name = "code")
     private String code;
 
-    @Column(name = "created_at") // понять в какой момент времени было
+    @Column(name = "created_at")
     private Instant createdAt;
 
 
-    public CurrencyEntity(int id) {
+    public static CurrencyEntity buildById(int id) {
+        return new CurrencyEntity(id);
+    }
+
+    public static CurrencyEntity buildNewCurrency(String name, String code) {
+        return new CurrencyEntity(name, code);
+    }
+
+
+    private CurrencyEntity(int id) {
         this.id = id;
     }
 
-    public CurrencyEntity(String name, String code) {
+    private CurrencyEntity(String name, String code) {
         this.name = name;
         this.code = code;
         this.createdAt = Instant.now();
     }
+
 
     @Override
     public String toString() {

@@ -28,15 +28,26 @@ public class ProfileEntity {
     @JoinColumn(name = "FK_profile_user", referencedColumnName = "id")
     private UserEntity user;
 
-    public ProfileEntity(int id) {
+
+    public static ProfileEntity buildById(int id) {
+        return new ProfileEntity(id);
+    }
+
+    public static ProfileEntity buildNewProfile(String fullName, UserEntity user) {
+        return new ProfileEntity(fullName, user);
+    }
+
+
+    private ProfileEntity(int id) {
         this.id = id;
     }
 
-    public ProfileEntity(String fullName, UserEntity user) {
+    private ProfileEntity(String fullName, UserEntity user) {
         this.fullName = fullName;
         this.user = user;
         this.createdAt = Instant.now();
     }
+
 
     @Override
     public String toString() {

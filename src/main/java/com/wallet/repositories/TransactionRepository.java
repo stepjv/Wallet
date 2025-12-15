@@ -1,5 +1,6 @@
 package com.wallet.repositories;
 
+import com.wallet.enums.TransactionStatus;
 import com.wallet.models.TransactionEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -15,4 +16,7 @@ public interface TransactionRepository extends JpaRepository<TransactionEntity, 
 
     @Query("SELECT t FROM TransactionEntity t WHERE t.payeeWallet.id = :walletId OR t.senderWallet.id = :walletId")
     List<TransactionEntity> findAllByWalletId(int walletId);
+
+    @Query("SELECT t FROM TransactionEntity t where t.payeeWallet.id = :walletId AND t.status = :transactionStatus")
+    List<TransactionEntity> findAllByWalletIdAndTransactionStatus(int walletId, TransactionStatus transactionStatus);
 }

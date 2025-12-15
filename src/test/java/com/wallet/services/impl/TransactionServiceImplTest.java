@@ -4,7 +4,7 @@ import com.wallet.WalletApplication;
 import com.wallet.config.EnvironmentService;
 import com.wallet.config.entity.WalletTestObj;
 import com.wallet.dto.request.TransactionReplenishmentRequest;
-import com.wallet.dto.request.TransactionTransferOutRequest;
+import com.wallet.dto.request.TransactionTransferRequest;
 import com.wallet.dto.response.TransactionResponse;
 import com.wallet.enums.TransactionStatus;
 import com.wallet.models.TransactionEntity;
@@ -23,7 +23,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -43,6 +42,7 @@ class TransactionServiceImplTest {
 
     private static final int WALLETS_AMOUNT = 2;
     private static final BigDecimal TRANSFER_MONEY_COUNT = BigDecimal.valueOf(50.32);
+    private static final String DESCRIPTION = "text";
 
     private List<WalletTestObj> wallets = new ArrayList<>();
 
@@ -54,45 +54,40 @@ class TransactionServiceImplTest {
     @Test
     void replenishShouldIncreaseWalletBalance() {
         // given
-        Random random = new Random();
-        final int walletId = random.nextInt(wallets.size()) + 1;
+        final int walletId = 1;
         WalletEntity wallet = walletRepository.findById(walletId);
-        BigDecimal walletBalance = wallet.getBalance();
 
-        TransactionReplenishmentRequest request = new TransactionReplenishmentRequest(walletId, TRANSFER_MONEY_COUNT, "text");
+        TransactionReplenishmentRequest request = new TransactionReplenishmentRequest(
+                walletId, TRANSFER_MONEY_COUNT, DESCRIPTION
+        );
 
         // when
-        TransactionResponse res = transactionService.replenish(request);
+        TransactionResponse res = transactionService.replenish(wallet.getProfile().getId(), request);
 
 
         // then
-        wallet = walletRepository.findById(walletId);
+        WalletEntity walletAfterTransaction = walletRepository.findById(walletId);
         Optional<TransactionEntity> transaction = transactionRepository.findById(res.transactionId());
 
         assertTrue(transaction.isPresent());
-        assertEquals(wallet.getBalance(), walletBalance.add(TRANSFER_MONEY_COUNT));
+        assertEquals(walletAfterTransaction.getBalance(), wallet.getBalance().add(TRANSFER_MONEY_COUNT));
     }
 
     @Test
-    void getAllByWalletId() {
-    }
-
-    @Test
-    void sendTransferOutRequestShouldCreateCancelledTransactionWithArithmeticError() {
+    void sendTransferRequestShouldCreateCancelledTransactionWithArithmeticError() {
         // given
-        Random random = new Random();
-        final int transferOutWalletId = random.nextInt(wallets.size()) + 1;
-        int transferInWalletId;
-        do {
-            transferInWalletId = random.nextInt(wallets.size()) + 1;
-        } while (transferOutWalletId == transferInWalletId);
+        final WalletEntity transferOutWallet = walletRepository.findById(1);
+        final int transferInWalletId = 2;
 
-        TransactionTransferOutRequest request = new TransactionTransferOutRequest(
-                transferOutWalletId, transferInWalletId,
-                TRANSFER_MONEY_COUNT, "text");
+        TransactionTransferRequest request = new TransactionTransferRequest(
+                transferOutWallet.getId(), transferInWalletId,
+                TRANSFER_MONEY_COUNT, DESCRIPTION
+        );
 
         // when
-        TransactionResponse response = transactionService.sendTransferOutRequest(request);
+        TransactionResponse response = transactionService.sendTransferRequest(
+                transferOutWallet.getProfile().getId(), request
+        );
 
         // then
         Optional<TransactionEntity> res = transactionRepository.findById(response.transactionId());
@@ -104,23 +99,24 @@ class TransactionServiceImplTest {
     }
 
     @Test
-    void sendTransferOutRequestShouldCreatePendingTransaction() {
+    void sendTransferRequestShouldCreatePendingTransaction() {
         // given
-        Random random = new Random();
-        final int transferOutWalletId = random.nextInt(wallets.size()) + 1;
-        int transferInWalletId;
-        do {
-            transferInWalletId = random.nextInt(wallets.size()) + 1;
-        } while (transferOutWalletId == transferInWalletId);
+        final WalletEntity transferOutWallet = walletRepository.findById(1);
+        final int transferInWalletId = 2;
 
-        transactionService.replenish(new TransactionReplenishmentRequest(transferOutWalletId, TRANSFER_MONEY_COUNT, "text"));
+        transactionService.replenish(
+                transferOutWallet.getProfile().getId(),
+                new TransactionReplenishmentRequest(transferOutWallet.getId(), TRANSFER_MONEY_COUNT, DESCRIPTION)
+        );
 
-        TransactionTransferOutRequest request = new TransactionTransferOutRequest(
-                transferOutWalletId, transferInWalletId,
-                TRANSFER_MONEY_COUNT, "text");
+        TransactionTransferRequest request = new TransactionTransferRequest(
+                transferOutWallet.getId(), transferInWalletId,
+                TRANSFER_MONEY_COUNT, DESCRIPTION);
 
         // when
-        TransactionResponse response = transactionService.sendTransferOutRequest(request);
+        TransactionResponse response = transactionService.sendTransferRequest(
+                transferOutWallet.getProfile().getId(), request
+        );
 
         // then
         Optional<TransactionEntity> res = transactionRepository.findById(response.transactionId());

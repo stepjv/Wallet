@@ -24,4 +24,9 @@ public class ProfileServiceImpl implements ProfileService {
     public ProfileEntity getByUserId(int userId) {
         return profileRepository.findProfileByUserId(userId);
     }
+
+    @Override
+    public ProfileEntity getById(int id) {
+        return profileRepository.findById(id);
+    }
 }

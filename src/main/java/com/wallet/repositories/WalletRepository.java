@@ -20,5 +20,9 @@ public interface WalletRepository extends JpaRepository<WalletEntity, Integer> {
     @Query("SELECT wallet FROM WalletEntity wallet WHERE wallet.id = :id")
     WalletEntity findById(int id);
 
+    @Query("SELECT wallet FROM WalletEntity wallet WHERE wallet.profile.id = :profileId")
     WalletEntity findByProfileId(int profileId);
+
+    @Query("SELECT COUNT(w) = 0 FROM WalletEntity w WHERE w.id = :walletId AND w.profile.id = :profileId")
+    boolean isWalletNotOwnedByProfile(int profileId, int walletId);
 }

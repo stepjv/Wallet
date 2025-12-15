@@ -27,20 +27,31 @@ public class UserEntity {
     @Column(name = "created_at")
     private Instant createdAt;
 
-    public UserEntity(String email, String password) {
+
+    public static UserEntity buildById(int id) {
+        return new UserEntity(id);
+    }
+
+    public static UserEntity buildNewUser(String email, String password) {
+        return new UserEntity(email, password);
+    }
+
+    public ProfileEntity buildProfileEntity() {
+        final String name = "guest";
+        return ProfileEntity.buildNewProfile(name, this);
+    }
+
+
+    private UserEntity(int id) {
+        this.id = id;
+    }
+
+    private UserEntity(String email, String password) {
         this.email = email;
         this.password = password;
         this.createdAt = Instant.now();
     }
 
-    public UserEntity(int id) {
-        this.id = id;
-    }
-
-    public ProfileEntity buildProfileEntity() {
-        final String name = "guest";
-        return new ProfileEntity(name, this);
-    }
 
     @Override
     public String toString() {

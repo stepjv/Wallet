@@ -49,24 +49,45 @@ public class TransactionEntity {
     @JoinColumn(name = "FK_transaction_payee_wallet", referencedColumnName = "id")
     private WalletEntity payeeWallet;
 
-    public TransactionEntity(String number, BigDecimal transferMoneyCount, TransactionStatus status, TransactionType type, String description, int walletId) {
+
+    public static TransactionEntity buildByReplenishRequest(String number, BigDecimal transferMoneyCount,
+                                                            TransactionStatus status, TransactionType type,
+                                                            String description, int walletId) {
+        return new TransactionEntity(
+                number, transferMoneyCount, status,
+                type, description, walletId
+        );
+    }
+
+    public static TransactionEntity buildByTransferRequest(int senderWalletId, int payeeWalletId, String number,
+                                                           BigDecimal transferMoneyCount, TransactionStatus status,
+                                                           TransactionType type, String description) {
+        return new TransactionEntity(
+                senderWalletId, payeeWalletId, number,
+                transferMoneyCount, status, type, description
+        );
+    }
+
+
+    private TransactionEntity(String number, BigDecimal transferMoneyCount, TransactionStatus status, TransactionType type, String description, int walletId) {
         this.number = number;
         this.transferMoneyCount = transferMoneyCount;
         this.description = description;
-        this.payeeWallet = new WalletEntity(walletId);
+        this.payeeWallet = WalletEntity.buildById(walletId);
         this.status = status;
         this.type = type;
     }
 
-    public TransactionEntity(int senderWalletId, int payeeWalletId, String number, BigDecimal transferMoneyCount, TransactionStatus status, TransactionType type, String description) {
+    private TransactionEntity(int senderWalletId, int payeeWalletId, String number, BigDecimal transferMoneyCount, TransactionStatus status, TransactionType type, String description) {
         this.number = number;
         this.transferMoneyCount = transferMoneyCount;
         this.description = description;
-        this.senderWallet = new WalletEntity(senderWalletId);
-        this.payeeWallet = new WalletEntity(payeeWalletId);
+        this.senderWallet = WalletEntity.buildById(senderWalletId);
+        this.payeeWallet = WalletEntity.buildById(payeeWalletId);
         this.status = status;
         this.type = type;
     }
+
 
     @Override
     public String toString() {

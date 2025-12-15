@@ -15,9 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.ActiveProfiles;
-
 import java.util.List;
-import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -48,15 +46,13 @@ class WalletServiceImplTest {
     }
 
 
-    // сначала вызвать регистрацию и только потом вызвать создание кошелька
     @Test
     void createShouldCreateNewWallet() {
         //given
-        Random random = new Random();
-        final int userId = random.nextInt(profiles.size()) + 1;
-        final int currencyId = random.nextInt(currencies.size()) + 1;
+        final int userId = 1;
+        final int currencyId = 1;
 
-        CurrencyEntity currency = new CurrencyEntity(currencyId);
+        CurrencyEntity currency = CurrencyEntity.buildById(currencyId);
         WalletCreateRequest request = new WalletCreateRequest(currency.getId());
 
         //when

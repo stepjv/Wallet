@@ -6,9 +6,9 @@ import com.wallet.models.TransactionEntity;
 
 import java.math.BigDecimal;
 
-public record TransactionTransferOutRequest(int transferOutWalletId, int transferInWalletId, BigDecimal transferAmount, String description) {
+public record TransactionTransferRequest(int transferOutWalletId, int transferInWalletId, BigDecimal transferAmount, String description) {
     public TransactionEntity buildTransactionEntity(String number) {
-        return new TransactionEntity(
+        return TransactionEntity.buildByTransferRequest(
                 transferOutWalletId,
                 transferInWalletId,
                 number, transferAmount,

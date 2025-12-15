@@ -2,6 +2,7 @@ package com.wallet.models;
 
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.math.BigDecimal;
 import java.time.Instant;
 
@@ -15,7 +16,7 @@ import java.time.Instant;
 public class WalletEntity {
 
     @Id
-    @Column(name="id")
+    @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
@@ -42,18 +43,31 @@ public class WalletEntity {
     @JoinColumn(name = "FK_wallet_profile", referencedColumnName = "id")
     private ProfileEntity profile;
 
-    public WalletEntity(String number, int currencyId, ProfileEntity profile, String uuid, BigDecimal balance) {
-        this.checkNumber = number;
-        this.createdAt = Instant.now();
-        this.currency = new CurrencyEntity(currencyId);
-        this.profile = profile;
-        this.uuid = uuid;
-        this.balance = balance;
+
+    public static WalletEntity buildById(int id) {
+        return new WalletEntity(id);
     }
 
-    public WalletEntity(int id) {
+    public static WalletEntity buildNewWallet(String number, int currencyId, ProfileEntity profile,
+                                              String uuid) {
+
+        return new WalletEntity(number, currencyId, profile, uuid);
+    }
+
+
+    private WalletEntity(int id) {
         this.id = id;
     }
+
+    private WalletEntity(String number, int currencyId, ProfileEntity profile, String uuid) {
+        this.checkNumber = number;
+        this.createdAt = Instant.now();
+        this.currency = CurrencyEntity.buildById(currencyId);
+        this.profile = profile;
+        this.uuid = uuid;
+        this.balance = BigDecimal.ZERO;
+    }
+
 
     @Override
     public String toString() {

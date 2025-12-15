@@ -1,22 +1,24 @@
 package com.wallet.services;
 
+import com.wallet.dto.request.TransactionGetByIdRequest;
+import com.wallet.dto.request.TransactionGetByWalletIdRequest;
 import com.wallet.dto.request.TransactionReplenishmentRequest;
-import com.wallet.dto.request.TransactionTransferOutRequest;
+import com.wallet.dto.request.TransactionTransferRequest;
+import com.wallet.dto.response.TransactionListResponse;
 import com.wallet.dto.response.TransactionResponse;
-import com.wallet.dto.TransactionDTO;
-
-import java.util.List;
 
 public interface TransactionService {
 
     /// API
-    TransactionResponse replenish(TransactionReplenishmentRequest request);
+    TransactionResponse replenish(int profileId, TransactionReplenishmentRequest request);
 
-    List<TransactionDTO> getAllByWalletId(int walletId);
+    TransactionListResponse getAllByWalletId(int profileId, TransactionGetByWalletIdRequest request);
 
-    TransactionResponse sendTransferOutRequest(TransactionTransferOutRequest request);
+    TransactionResponse sendTransferRequest(int profileId, TransactionTransferRequest request);
 
-    int acceptTransferOutRequest();
+    TransactionListResponse getPendingTransferRequestsByWalletId(int profileId, TransactionGetByWalletIdRequest request);
+
+    TransactionResponse acceptTransfer(int profileId, TransactionGetByIdRequest request);
 
     /// HELP
 

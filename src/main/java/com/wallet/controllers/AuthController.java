@@ -2,11 +2,7 @@ package com.wallet.controllers;
 
 import com.wallet.dto.request.UserSignUpRequest;
 import com.wallet.services.AuthService;
-import com.wallet.util.exceptions.ErrorResponse;
-import com.wallet.util.exceptions.IsExistException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -19,14 +15,6 @@ public class AuthController {
     @PostMapping("/signup")
     public void signUp(@RequestBody UserSignUpRequest request) {
         authService.signUp(request);
-    }
-
-    @ExceptionHandler
-    private ResponseEntity<ErrorResponse> exceptionHandler(IsExistException exception){
-        return new ResponseEntity<>(
-                new ErrorResponse(exception.getMessage()),
-                HttpStatus.BAD_REQUEST
-        );
     }
 
 }

@@ -2,18 +2,29 @@ package com.wallet.services;
 
 import com.wallet.dto.request.WalletCreateRequest;
 import com.wallet.dto.WalletDTO;
-import com.wallet.enums.RequestStatus;
+import com.wallet.dto.response.WalletListResponse;
+import com.wallet.enums.status.WalletResponseStatus;
+import com.wallet.models.WalletEntity;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 public interface WalletService {
 
     /// API
     int create(int userId, WalletCreateRequest request);
 
-    List<WalletDTO> getAllWalletsByUserId(int userId);
+    WalletListResponse getAllWalletsByUserId(int userId);
+
+    WalletDTO getDTOById(int walletId);
 
     /// HELP
-    RequestStatus canTransfer(int walletId, BigDecimal countOfMoney, boolean transferable);
+    WalletResponseStatus changeBalance(int walletId, BigDecimal money);
+
+    WalletResponseStatus canTransfer(int walletId, BigDecimal money);
+
+    WalletEntity getEntityById(int walletId);
+
+    boolean isWalletIdNotOwnedByProfileId(int profileId, int walletId);
+
+
 }

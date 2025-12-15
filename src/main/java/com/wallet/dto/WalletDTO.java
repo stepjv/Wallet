@@ -1,23 +1,18 @@
 package com.wallet.dto;
 
-import com.wallet.models.CurrencyEntity;
-import com.wallet.models.ProfileEntity;
 import com.wallet.models.WalletEntity;
 import lombok.Data;
-
 import java.math.BigDecimal;
-import java.time.Instant;
 
 @Data
 public class WalletDTO {
-    private int id;
-    private String uuid;
-    private String checkNumber;
-    private BigDecimal balance;
-    private String description;
-    private Instant createdAt;
-    private CurrencyEntity currency;
-    private ProfileEntity profile;
+    private final int id;
+    private final String uuid;
+    private final String checkNumber;
+    private final BigDecimal balance;
+    private final String description;
+    private final CurrencyDTO currency;
+    private final ProfileDTO profile;
 
     public WalletDTO(WalletEntity w) {
         this.id = w.getId();
@@ -25,8 +20,7 @@ public class WalletDTO {
         this.checkNumber = w.getCheckNumber();
         this.balance = w.getBalance();
         this.description = w.getDescription();
-        this.createdAt = w.getCreatedAt();
-        this.currency = w.getCurrency();
-        this.profile = w.getProfile();
+        this.currency = new CurrencyDTO(w.getCurrency());
+        this.profile = new ProfileDTO(w.getProfile());
     }
 }

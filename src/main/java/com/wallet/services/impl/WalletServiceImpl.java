@@ -2,7 +2,8 @@ package com.wallet.services.impl;
 
 import com.wallet.dto.request.WalletCreateRequest;
 import com.wallet.dto.WalletDTO;
-import com.wallet.enums.RequestStatus;
+import com.wallet.dto.response.WalletListResponse;
+import com.wallet.enums.status.WalletResponseStatus;
 import com.wallet.models.ProfileEntity;
 import com.wallet.models.WalletEntity;
 import com.wallet.repositories.WalletRepository;
@@ -10,6 +11,8 @@ import com.wallet.services.ProfileService;
 import com.wallet.services.WalletService;
 import com.wallet.util.RandomNumberGenerator;
 import com.wallet.util.Validator;
+import com.wallet.util.exceptions.BalanceExceededException;
+import com.wallet.util.exceptions.NegativeBalanceException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -40,43 +43,79 @@ public class WalletServiceImpl implements WalletService {
     }
 
     @Override
-    public RequestStatus canTransfer(int walletId, BigDecimal countOfMoney, boolean transferable) {
+    public WalletResponseStatus changeBalance(int walletId, BigDecimal money) {
+
         WalletEntity wallet = walletRepository.findById(walletId);
 
         try {
 
-            BigDecimal newBalance = Validator.safeSumOfDecimal(wallet.getBalance(), countOfMoney);
-            if (transferable) {
-                wallet.setBalance(newBalance);
-                walletRepository.save(wallet);
-            }
+            BigDecimal newBalance = Validator.safeSumOfDecimal(wallet.getBalance(), money);
 
-        } catch (ArithmeticException e) {
-            return RequestStatus.ARITHMETIC_ERROR;
+            wallet.setBalance(newBalance);
+            walletRepository.save(wallet);
+
+        } catch (BalanceExceededException e) {
+            return WalletResponseStatus.CANCELLED_BALANCE_EXCEEDED;
+        } catch (NegativeBalanceException e) {
+            return WalletResponseStatus.CANCELLED_NEGATIVE_BALANCE;
         } catch (Exception e) {
-            return RequestStatus.BD_ERROR;
+            return WalletResponseStatus.CANCELLED_DATA_BASE_ERROR;
         }
 
-        return RequestStatus.OK;
+        return WalletResponseStatus.OK;
     }
 
     @Override
-    public List<WalletDTO> getAllWalletsByUserId(int userId) {
+    public WalletListResponse getAllWalletsByUserId(int userId) {
         ProfileEntity profile = profileService.getByUserId(userId);
         List<WalletEntity> wallets = walletRepository.findAllByProfile(profile);
         List<WalletDTO> walletDTOList = new ArrayList<>();
 
         if (wallets.isEmpty()) {
-            return Collections.emptyList();
+            return (WalletListResponse) Collections.emptyList();
         }
 
         for (WalletEntity wallet : wallets) {
             walletDTOList.add(new WalletDTO(wallet));
         }
 
-        return walletDTOList;
+        return new WalletListResponse(walletDTOList);
     }
 
+    @Override
+    public WalletDTO getDTOById(int walletId) {
+        return new WalletDTO(walletRepository.findById(walletId));
+    }
+
+    @Override
+    public WalletResponseStatus canTransfer(int walletId, BigDecimal money) {
+
+        WalletEntity wallet = walletRepository.findById(walletId);
+
+        try {
+
+            Validator.safeSumOfDecimal(wallet.getBalance(), money);
+
+        } catch (BalanceExceededException e) {
+            return WalletResponseStatus.CANCELLED_BALANCE_EXCEEDED;
+        } catch (NegativeBalanceException e) {
+            return WalletResponseStatus.CANCELLED_NEGATIVE_BALANCE;
+        }
+
+        return WalletResponseStatus.OK;
+    }
+
+    @Override
+    public WalletEntity getEntityById(int walletId) {
+        return walletRepository.findById(walletId);
+    }
+
+    @Override
+    public boolean isWalletIdNotOwnedByProfileId(int profileId, int walletId) {
+        return walletRepository.isWalletNotOwnedByProfile(profileId, walletId);
+    }
+
+    /// INTERNAL HELP
 
     private String generateUniqueNumber() {
         String uniqueNumber = RandomNumberGenerator.getWalletCheck();

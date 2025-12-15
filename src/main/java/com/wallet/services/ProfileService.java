@@ -10,4 +10,6 @@ public interface ProfileService {
     int create(UserEntity user);
 
     ProfileEntity getByUserId(int userId);
+
+    ProfileEntity getById(int id);
 }

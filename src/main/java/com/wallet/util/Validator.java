@@ -1,5 +1,7 @@
 package com.wallet.util;
 
+import com.wallet.util.exceptions.BalanceExceededException;
+import com.wallet.util.exceptions.NegativeBalanceException;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -16,11 +18,11 @@ public class Validator {
         BigDecimal sum = a.add(b);
 
         if (sum.compareTo(BALANCE_MAX_VALUE) > 0) {
-            throw new ArithmeticException("Значение превышает максимально допустимое");
+            throw new BalanceExceededException();
         }
 
         if (sum.signum() == -1) {
-            throw new ArithmeticException("Недостаточно средств");
+            throw new NegativeBalanceException();
         }
 
         return sum;

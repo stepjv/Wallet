@@ -1,12 +1,8 @@
 package com.wallet.util.exceptions;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
-@Setter
-@Getter
-@AllArgsConstructor
+@Data
 public class ErrorResponse {
     private String message;
 }
