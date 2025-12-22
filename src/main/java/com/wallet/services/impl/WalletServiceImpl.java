@@ -1,7 +1,7 @@
 package com.wallet.services.impl;
 
 import com.wallet.dto.request.WalletCreateRequest;
-import com.wallet.dto.response.WalletObjResponse;
+import com.wallet.dto.response.WalletResponse;
 import com.wallet.dto.response.WalletListResponse;
 import com.wallet.enums.status.WalletResponseStatus;
 import com.wallet.models.ProfileEntity;
@@ -30,12 +30,12 @@ public class WalletServiceImpl implements WalletService {
     private final ProfileService profileService;
 
     @Override
-    public int create(int userId, WalletCreateRequest request) {
+    public int create(int profileId, WalletCreateRequest request) {
         String checkNumber = generateUniqueNumber();
 
         UUID uuid = UUID.randomUUID();
 
-        final ProfileEntity profile = profileService.getByUserId(userId);
+        final ProfileEntity profile = profileService.getById(profileId);
 
         final WalletEntity wallet = request.buildWalletEntity(checkNumber, profile, uuid);
 
@@ -69,22 +69,22 @@ public class WalletServiceImpl implements WalletService {
     public WalletListResponse getAllWalletsByUserId(int userId) {
         ProfileEntity profile = profileService.getByUserId(userId);
         List<WalletEntity> wallets = walletRepository.findAllByProfile(profile);
-        List<WalletObjResponse> walletObjResponseList = new ArrayList<>();
+        List<WalletResponse> walletResponseList = new ArrayList<>();
 
         if (wallets.isEmpty()) {
             return (WalletListResponse) Collections.emptyList();
         }
 
         for (WalletEntity wallet : wallets) {
-            walletObjResponseList.add(new WalletObjResponse(wallet));
+            walletResponseList.add(new WalletResponse(wallet));
         }
 
-        return new WalletListResponse(walletObjResponseList);
+        return new WalletListResponse(walletResponseList);
     }
 
     @Override
-    public WalletObjResponse getDTOById(int walletId) {
-        return new WalletObjResponse(walletRepository.findById(walletId));
+    public WalletResponse getDTOById(int walletId) {
+        return new WalletResponse(walletRepository.findById(walletId));
     }
 
     @Override

@@ -8,5 +8,5 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 public class WalletListResponse {
-    private List<WalletObjResponse> walletObjResponseList;
+    private List<WalletResponse> walletResponseList;
 }

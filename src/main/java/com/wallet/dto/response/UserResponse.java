@@ -4,11 +4,11 @@ import com.wallet.models.UserEntity;
 import lombok.Data;
 
 @Data
-public class UserObjResponse {
+public class UserResponse {
     private final int id;
     private final String email;
 
-    public UserObjResponse(UserEntity u) {
+    public UserResponse(UserEntity u) {
         this.email = u.getEmail();
         this.id = u.getId();
     }
