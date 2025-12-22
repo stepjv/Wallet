@@ -3,9 +3,10 @@ package com.wallet.services.impl;
 import com.wallet.WalletApplication;
 import com.wallet.config.EnvironmentService;
 import com.wallet.config.entity.WalletTestObj;
+import com.wallet.dto.request.TransactionGetByIdRequest;
 import com.wallet.dto.request.TransactionReplenishmentRequest;
 import com.wallet.dto.request.TransactionTransferRequest;
-import com.wallet.dto.response.TransactionResponse;
+import com.wallet.dto.response.TransactionIdResponse;
 import com.wallet.enums.TransactionStatus;
 import com.wallet.models.TransactionEntity;
 import com.wallet.models.WalletEntity;
@@ -40,9 +41,9 @@ class TransactionServiceImplTest {
     @Autowired
     private WalletRepository walletRepository;
 
-    private static final int WALLETS_AMOUNT = 2;
+    private static final int WALLETS_AMOUNT = 5;
     private static final BigDecimal TRANSFER_MONEY_COUNT = BigDecimal.valueOf(50.32);
-    private static final String DESCRIPTION = "text";
+    private static final String DESCRIPTION = "description";
 
     private List<WalletTestObj> wallets = new ArrayList<>();
 
@@ -62,7 +63,7 @@ class TransactionServiceImplTest {
         );
 
         // when
-        TransactionResponse res = transactionService.replenish(wallet.getProfile().getId(), request);
+        TransactionIdResponse res = transactionService.replenish(wallet.getProfile().getId(), request);
 
 
         // then
@@ -85,7 +86,7 @@ class TransactionServiceImplTest {
         );
 
         // when
-        TransactionResponse response = transactionService.sendTransferRequest(
+        TransactionIdResponse response = transactionService.sendTransferRequest(
                 transferOutWallet.getProfile().getId(), request
         );
 
@@ -98,6 +99,9 @@ class TransactionServiceImplTest {
         System.out.println("Response status -> " + response.status());
     }
 
+    /*
+    Создает запрос на перевод (создает транзакцию со статусом pending)
+     */
     @Test
     void sendTransferRequestShouldCreatePendingTransaction() {
         // given
@@ -114,7 +118,7 @@ class TransactionServiceImplTest {
                 TRANSFER_MONEY_COUNT, DESCRIPTION);
 
         // when
-        TransactionResponse response = transactionService.sendTransferRequest(
+        TransactionIdResponse response = transactionService.sendTransferRequest(
                 transferOutWallet.getProfile().getId(), request
         );
 
@@ -125,5 +129,46 @@ class TransactionServiceImplTest {
 
         System.out.println(res.get().toString());
         System.out.println("Response status -> " + response.status());
+    }
+
+    /*
+    меняет статус ранее созданной транзакции (pending -> completed)
+    меняет баланс кошельков (перевод средств между кошельками)
+    */
+    @Test
+    void acceptTransferShouldChangeTransactionStatusAndChangeBalanceOfWallets() {
+        // given
+        WalletTestObj walletOut = wallets.get(1);
+        WalletTestObj walletIn = wallets.get(2);
+
+        walletOut.setBalance(TRANSFER_MONEY_COUNT);
+
+        transactionService.replenish(
+                walletOut.getProfile().getId(),
+                new TransactionReplenishmentRequest(walletOut.getId(), TRANSFER_MONEY_COUNT, DESCRIPTION)
+        );
+
+        int transactionId = environmentService.initializeOnePendingTransaction(
+                walletOut, walletIn, walletOut.getBalance()
+        ).transactionId();
+
+        // when
+        TransactionIdResponse response = transactionService.acceptTransfer(
+                wallets.get(2).getProfile().getId(),
+                new TransactionGetByIdRequest(transactionId)
+        );
+
+        // then
+        WalletEntity newWalletOut = walletRepository.findById(walletOut.getId());
+        WalletEntity newWalletIn = walletRepository.findById(walletIn.getId());
+
+        assertEquals(
+                walletOut.getBalance().add(walletIn.getBalance()),
+                newWalletIn.getBalance()
+        );
+        assertEquals(
+                walletOut.getBalance().add(TRANSFER_MONEY_COUNT.negate()),
+                newWalletOut.getBalance()
+        );
     }
 }

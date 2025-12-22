@@ -5,14 +5,13 @@ import com.wallet.dto.request.TransactionGetByWalletIdRequest;
 import com.wallet.dto.request.TransactionReplenishmentRequest;
 import com.wallet.dto.request.TransactionTransferRequest;
 import com.wallet.dto.response.TransactionListResponse;
-import com.wallet.dto.response.TransactionResponse;
-import com.wallet.dto.TransactionDTO;
+import com.wallet.dto.response.TransactionIdResponse;
+import com.wallet.dto.response.TransactionObjResponse;
 import com.wallet.enums.TransactionStatus;
 import com.wallet.enums.status.TransactionResponseStatus;
 import com.wallet.enums.status.WalletResponseStatus;
 import com.wallet.models.TransactionEntity;
 import com.wallet.repositories.TransactionRepository;
-import com.wallet.services.ProfileService;
 import com.wallet.services.TransactionService;
 import com.wallet.services.WalletService;
 import com.wallet.util.RandomNumberGenerator;
@@ -34,10 +33,10 @@ public class TransactionServiceImpl implements TransactionService {
     private final WalletService walletService;
 
     @Override
-    public TransactionResponse replenish(int profileId, TransactionReplenishmentRequest request) {
+    public TransactionIdResponse replenish(int profileId, TransactionReplenishmentRequest request) {
 
         if (walletService.isWalletIdNotOwnedByProfileId(profileId, request.walletId())) {
-            return new TransactionResponse(TransactionResponseStatus.CANCELLED_PROFILE_NOT_OWN_WALLET);
+            return new TransactionIdResponse(TransactionResponseStatus.CANCELLED_PROFILE_NOT_OWN_WALLET);
         }
 
         String transactionNumber = generateUniqueNumber();
@@ -48,7 +47,7 @@ public class TransactionServiceImpl implements TransactionService {
                 transaction.getTransferMoneyCount()
         );
 
-        TransactionResponseStatus transactionResponseStatus = walletStatusToTransactionStatus(walletResponseStatus);
+        TransactionResponseStatus transactionResponseStatus = walletResponseStatus.getTransactionResponseStatus();
 
         if (transactionResponseStatus == OK) {
             transaction.setStatus(TransactionStatus.COMPLETED);
@@ -57,7 +56,7 @@ public class TransactionServiceImpl implements TransactionService {
         }
 
         int transactionId = transactionRepository.save(transaction).getId();
-        return new TransactionResponse(transactionId, transactionResponseStatus);
+        return new TransactionIdResponse(transactionId, transactionResponseStatus);
     }
 
     public TransactionListResponse getAllByWalletId(int profileId, TransactionGetByWalletIdRequest request) {
@@ -68,22 +67,22 @@ public class TransactionServiceImpl implements TransactionService {
 
         List<TransactionEntity> transactions = transactionRepository.findAllByWalletId(request.walletId());
         if (transactions.isEmpty()) {
-            return new TransactionListResponse(Collections.emptyList(), OK_EMPTY_LIST) ;
+            return new TransactionListResponse(Collections.emptyList(), OK) ;
         }
 
-        List<TransactionDTO> transactionsDTO = new ArrayList<>();
+        List<TransactionObjResponse> transactionsDTO = new ArrayList<>();
         for (TransactionEntity transaction : transactions) {
-            transactionsDTO.add(new TransactionDTO(transaction));
+            transactionsDTO.add(new TransactionObjResponse(transaction));
         }
 
         return new TransactionListResponse(transactionsDTO, OK);
     }
 
     @Override
-    public TransactionResponse sendTransferRequest(int profileId, TransactionTransferRequest request) {
+    public TransactionIdResponse sendTransferRequest(int profileId, TransactionTransferRequest request) {
 
         if(walletService.isWalletIdNotOwnedByProfileId(profileId, request.transferOutWalletId())) {
-            return new TransactionResponse(CANCELLED_PROFILE_NOT_OWN_WALLET);
+            return new TransactionIdResponse(CANCELLED_PROFILE_NOT_OWN_WALLET);
         }
 
         TransactionEntity transaction = request.buildTransactionEntity(generateUniqueNumber());
@@ -93,7 +92,7 @@ public class TransactionServiceImpl implements TransactionService {
                 transaction.getTransferMoneyCount().negate()
         );
 
-        TransactionResponseStatus transactionResponseStatus = walletStatusToTransactionStatus(walletResponseStatus);
+        TransactionResponseStatus transactionResponseStatus = walletResponseStatus.getTransactionResponseStatus();
 
         if (transactionResponseStatus == OK) {
             transaction.setStatus(TransactionStatus.PENDING);
@@ -103,7 +102,7 @@ public class TransactionServiceImpl implements TransactionService {
 
         int transactionId = transactionRepository.save(transaction).getId();
 
-        return new TransactionResponse(transactionId, transactionResponseStatus);
+        return new TransactionIdResponse(transactionId, transactionResponseStatus);
     }
 
     @Override
@@ -117,27 +116,27 @@ public class TransactionServiceImpl implements TransactionService {
                 request.walletId(), TransactionStatus.PENDING
         );
         if (transactions.isEmpty()) {
-            return new TransactionListResponse(Collections.emptyList(), OK_EMPTY_LIST) ;
+            return new TransactionListResponse(Collections.emptyList(), OK) ;
         }
 
-        List<TransactionDTO> transactionsDTO = new ArrayList<>();
+        List<TransactionObjResponse> transactionsDTO = new ArrayList<>();
         for (TransactionEntity transaction : transactions) {
-            transactionsDTO.add(new TransactionDTO(transaction));
+            transactionsDTO.add(new TransactionObjResponse(transaction));
         }
 
         return new TransactionListResponse(transactionsDTO, OK);
     }
 
     @Override
-    public TransactionResponse acceptTransfer(int profileId, TransactionGetByIdRequest request) {
+    public TransactionIdResponse acceptTransfer(int profileId, TransactionGetByIdRequest request) {
         Optional<TransactionEntity> transaction = transactionRepository.findById(request.transactionId());
         if (transaction.isEmpty()) {
-            return new TransactionResponse(CANCELLED_TRANSACTION_NOT_EXIST);
+            return new TransactionIdResponse(CANCELLED_TRANSACTION_NOT_EXIST);
         }
         int payeeWalletId = transaction.get().getPayeeWallet().getId();
 
         if (walletService.isWalletIdNotOwnedByProfileId(profileId, payeeWalletId)) {
-            return new TransactionResponse(CANCELLED_PROFILE_NOT_OWN_WALLET);
+            return new TransactionIdResponse(CANCELLED_PROFILE_NOT_OWN_WALLET);
         }
 
         WalletResponseStatus walletResponseStatus = walletService.changeBalance(
@@ -150,15 +149,12 @@ public class TransactionServiceImpl implements TransactionService {
             );
         }
 
-        TransactionResponseStatus transactionResponseStatus = walletStatusToTransactionStatus(walletResponseStatus);
-        if (transactionResponseStatus == OK) {
-            transaction.get().setStatus(TransactionStatus.COMPLETED);
-        } else {
-            transaction.get().setStatus(TransactionStatus.CANCELLED);
-        }
+        TransactionResponseStatus transactionResponseStatus = walletResponseStatus.getTransactionResponseStatus();
+
+        transaction.get().setStatus(TransactionStatus.getByTransactionResponseStatus(transactionResponseStatus));
 
         int transactionId = transactionRepository.save(transaction.get()).getId();
-        return new TransactionResponse(transactionId, transactionResponseStatus);
+        return new TransactionIdResponse(transactionId, transactionResponseStatus);
     }
 
     /// INTERNAL HELP
@@ -169,25 +165,5 @@ public class TransactionServiceImpl implements TransactionService {
             uniqueNumber = RandomNumberGenerator.getTransactionNumber();
         }
         return uniqueNumber;
-    }
-
-    private TransactionResponseStatus walletStatusToTransactionStatus(WalletResponseStatus walletResponseStatus) {
-        switch (walletResponseStatus) {
-            case OK -> {
-                return OK;
-            }
-            case CANCELLED_DATA_BASE_ERROR -> {
-                return CANCELLED_DATA_BASE_ERROR;
-            }
-            case CANCELLED_BALANCE_EXCEEDED -> {
-                return CANCELLED_BALANCE_EXCEEDED;
-            }
-            case CANCELLED_NEGATIVE_BALANCE -> {
-                return CANCELLED_NEGATIVE_BALANCE;
-            }
-            default -> {
-                return CANCELLED_UNKNOWN_SCENARIO;
-            }
-        }
     }
 }

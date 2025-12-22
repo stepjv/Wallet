@@ -1,26 +1,26 @@
-package com.wallet.dto;
+package com.wallet.dto.response;
 
 import com.wallet.models.WalletEntity;
 import lombok.Data;
 import java.math.BigDecimal;
 
 @Data
-public class WalletDTO {
+public class WalletObjResponse {
     private final int id;
     private final String uuid;
     private final String checkNumber;
     private final BigDecimal balance;
     private final String description;
-    private final CurrencyDTO currency;
-    private final ProfileDTO profile;
+    private final CurrencyObjResponse currency;
+    private final ProfileObjResponse profile;
 
-    public WalletDTO(WalletEntity w) {
+    public WalletObjResponse(WalletEntity w) {
         this.id = w.getId();
         this.uuid = w.getUuid();
         this.checkNumber = w.getCheckNumber();
         this.balance = w.getBalance();
         this.description = w.getDescription();
-        this.currency = new CurrencyDTO(w.getCurrency());
-        this.profile = new ProfileDTO(w.getProfile());
+        this.currency = new CurrencyObjResponse(w.getCurrency());
+        this.profile = new ProfileObjResponse(w.getProfile());
     }
 }

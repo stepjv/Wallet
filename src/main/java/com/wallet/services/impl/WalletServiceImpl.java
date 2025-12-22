@@ -1,7 +1,7 @@
 package com.wallet.services.impl;
 
 import com.wallet.dto.request.WalletCreateRequest;
-import com.wallet.dto.WalletDTO;
+import com.wallet.dto.response.WalletObjResponse;
 import com.wallet.dto.response.WalletListResponse;
 import com.wallet.enums.status.WalletResponseStatus;
 import com.wallet.models.ProfileEntity;
@@ -69,22 +69,22 @@ public class WalletServiceImpl implements WalletService {
     public WalletListResponse getAllWalletsByUserId(int userId) {
         ProfileEntity profile = profileService.getByUserId(userId);
         List<WalletEntity> wallets = walletRepository.findAllByProfile(profile);
-        List<WalletDTO> walletDTOList = new ArrayList<>();
+        List<WalletObjResponse> walletObjResponseList = new ArrayList<>();
 
         if (wallets.isEmpty()) {
             return (WalletListResponse) Collections.emptyList();
         }
 
         for (WalletEntity wallet : wallets) {
-            walletDTOList.add(new WalletDTO(wallet));
+            walletObjResponseList.add(new WalletObjResponse(wallet));
         }
 
-        return new WalletListResponse(walletDTOList);
+        return new WalletListResponse(walletObjResponseList);
     }
 
     @Override
-    public WalletDTO getDTOById(int walletId) {
-        return new WalletDTO(walletRepository.findById(walletId));
+    public WalletObjResponse getDTOById(int walletId) {
+        return new WalletObjResponse(walletRepository.findById(walletId));
     }
 
     @Override

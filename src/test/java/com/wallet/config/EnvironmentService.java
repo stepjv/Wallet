@@ -1,20 +1,17 @@
 package com.wallet.config;
 
-import com.wallet.config.entity.CurrencyTestObj;
-import com.wallet.config.entity.ProfileTestObj;
-import com.wallet.config.entity.UserTestObj;
-import com.wallet.config.entity.WalletTestObj;
+import com.wallet.config.entity.*;
 import com.wallet.dto.request.CurrencyAddRequest;
+import com.wallet.dto.request.TransactionTransferRequest;
 import com.wallet.dto.request.UserSignUpRequest;
 import com.wallet.dto.request.WalletCreateRequest;
-import com.wallet.services.AuthService;
-import com.wallet.services.CurrencyService;
-import com.wallet.services.ProfileService;
-import com.wallet.services.WalletService;
+import com.wallet.dto.response.TransactionIdResponse;
+import com.wallet.services.*;
 import com.wallet.util.exceptions.IsExistException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,11 +27,13 @@ public class EnvironmentService {
     private static final String EMAIL_DOMAIN = "@mail.ru";
     private static final int CURRENCY_CODE_LENGTH = 3;
     private static final int CURRENCY_NAME_LENGTH = 5;
+    private static final String DESCRIPTION = "description";
 
     private final AuthService authService;
     private final ProfileService profileService;
     private final CurrencyService currencyService;
     private final WalletService walletService;
+    private final TransactionService transactionService;
 
 
     public List<UserTestObj> initializeSignUp(int amountUsers) {
@@ -53,6 +52,17 @@ public class EnvironmentService {
             } catch (IsExistException e) {
                 i--;
             }
+        }
+        return users;
+    }
+    public List<UserTestObj> initializeSignUp(List<UserTestObj> users) {
+        for (UserTestObj user : users){
+            UserSignUpRequest request = new UserSignUpRequest(
+                    user.getEmail(),
+                    user.getPassword()
+            );
+            int userId = authService.signUp(request);
+            user.setId(userId);
         }
         return users;
     }
@@ -91,9 +101,10 @@ public class EnvironmentService {
                 int currencyId = currencyService.add(request);
 
                 currency = new CurrencyTestObj(currencyId);
+
+                break;
             } catch (IsExistException e) {}
 
-            break;
         }
         return currency;
     }
@@ -108,11 +119,20 @@ public class EnvironmentService {
                     profile.getUser().getId(),
                     new WalletCreateRequest(currency.getId())
             );
-            wallets.add(new WalletTestObj(walletId, currency, profile));
+            wallets.add(WalletTestObj.buildZeroBalanceWalletByWalletInitializer(walletId, currency, profile));
         }
 
         return wallets;
     }
+
+    public TransactionIdResponse initializeOnePendingTransaction(WalletTestObj walletOut, WalletTestObj walletIn, BigDecimal money) {
+        TransactionTransferRequest request = new TransactionTransferRequest(
+                walletOut.getId(), walletIn.getId(), money, DESCRIPTION
+        );
+        return transactionService.sendTransferRequest(walletOut.getProfile().getId(), request);
+    }
+
+    /// INTERNAL HELP
 
     private String generateEmail() {
         final int emailNameLength = 5;

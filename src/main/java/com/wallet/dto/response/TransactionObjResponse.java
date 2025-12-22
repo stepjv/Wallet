@@ -1,4 +1,4 @@
-package com.wallet.dto;
+package com.wallet.dto.response;
 
 import com.wallet.enums.TransactionStatus;
 import com.wallet.enums.TransactionType;
@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 
 @Data
-public class TransactionDTO {
+public class TransactionObjResponse {
     private final int id;
     private final String number;
     private final BigDecimal moneyCount;
@@ -17,10 +17,10 @@ public class TransactionDTO {
     private final TransactionType type;
     private final String description;
     private final Instant createdAt;
-    private final WalletDTO senderWallet;
-    private final WalletDTO payeeWallet;
+    private final WalletObjResponse senderWallet;
+    private final WalletObjResponse payeeWallet;
 
-    public TransactionDTO(TransactionEntity t) {
+    public TransactionObjResponse(TransactionEntity t) {
         this.id = t.getId();
         this.number = t.getNumber();
         this.moneyCount = t.getTransferMoneyCount();
@@ -28,8 +28,8 @@ public class TransactionDTO {
         this.type = t.getType();
         this.description = t.getDescription();
         this.createdAt = t.getCreatedAt();
-        this.senderWallet = new WalletDTO(t.getSenderWallet());
-        this.payeeWallet = new WalletDTO(t.getPayeeWallet());
+        this.senderWallet = new WalletObjResponse(t.getSenderWallet());
+        this.payeeWallet = new WalletObjResponse(t.getPayeeWallet());
     }
 }
 

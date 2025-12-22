@@ -1,12 +1,13 @@
 package com.wallet.enums.status;
 
+import lombok.Getter;
+
+@Getter
 public enum TransactionResponseStatus {
     OK,
-    OK_EMPTY_LIST,
     CANCELLED_DATA_BASE_ERROR,
     CANCELLED_BALANCE_EXCEEDED,
     CANCELLED_NEGATIVE_BALANCE,
     CANCELLED_PROFILE_NOT_OWN_WALLET,
-    CANCELLED_TRANSACTION_NOT_EXIST,
-    CANCELLED_UNKNOWN_SCENARIO
+    CANCELLED_TRANSACTION_NOT_EXIST;
 }
