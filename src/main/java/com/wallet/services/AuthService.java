@@ -4,6 +4,6 @@ import com.wallet.dto.request.UserSignUpRequest;
 
 public interface AuthService {
 
-    /// API !  нужно тестить в IT
+    /// API
     int signUp(UserSignUpRequest request);
 }

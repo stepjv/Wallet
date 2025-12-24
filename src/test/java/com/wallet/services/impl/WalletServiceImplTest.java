@@ -37,7 +37,6 @@ class WalletServiceImplTest {
     private List<ProfileTestObj> profiles;
     private List<CurrencyTestObj> currencies;
 
-
     @BeforeEach
     void setUp() {
         profiles = environmentService.initializeProfiles(PROFILES_AMOUNT);
@@ -49,18 +48,17 @@ class WalletServiceImplTest {
     @Test
     void createShouldCreateNewWallet() {
         //given
-        final int userId = 1;
+        final int profileId = 1;
         final int currencyId = 1;
 
-        CurrencyEntity currency = CurrencyEntity.buildById(currencyId);
-        WalletCreateRequest request = new WalletCreateRequest(currency.getId());
+        final CurrencyEntity currency = CurrencyEntity.buildById(currencyId);
+        final WalletCreateRequest request = new WalletCreateRequest(currency.getId());
 
         //when
-        walletService.create(userId, request);
+        walletService.create(profileId, request);
 
         //then
-        final WalletEntity res = walletRepository.findByProfileId(userId);
+        final WalletEntity res = walletRepository.findByProfileId(profileId);
         assertNotNull(res);
     }
-
 }

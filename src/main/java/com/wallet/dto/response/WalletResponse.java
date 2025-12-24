@@ -5,22 +5,22 @@ import lombok.Data;
 import java.math.BigDecimal;
 
 @Data
-public class WalletObjResponse {
+public class WalletResponse {
     private final int id;
     private final String uuid;
     private final String checkNumber;
     private final BigDecimal balance;
     private final String description;
-    private final CurrencyObjResponse currency;
-    private final ProfileObjResponse profile;
+    private final CurrencyResponse currency;
+    private final ProfileResponse profile;
 
-    public WalletObjResponse(WalletEntity w) {
+    public WalletResponse(WalletEntity w) {
         this.id = w.getId();
         this.uuid = w.getUuid();
         this.checkNumber = w.getCheckNumber();
         this.balance = w.getBalance();
         this.description = w.getDescription();
-        this.currency = new CurrencyObjResponse(w.getCurrency());
-        this.profile = new ProfileObjResponse(w.getProfile());
+        this.currency = new CurrencyResponse(w.getCurrency());
+        this.profile = new ProfileResponse(w.getProfile());
     }
 }

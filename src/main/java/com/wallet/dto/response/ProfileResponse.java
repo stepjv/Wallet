@@ -5,14 +5,14 @@ import lombok.Data;
 
 
 @Data
-public class ProfileObjResponse {
+public class ProfileResponse {
     private final int id;
     private final String fullName;
-    private final UserObjResponse user;
+    private final UserResponse user;
 
-    public ProfileObjResponse(ProfileEntity p) {
+    public ProfileResponse(ProfileEntity p) {
         this.id = p.getId();
         this.fullName = p.getFullName();
-        this.user = new UserObjResponse(p.getUser());
+        this.user = new UserResponse(p.getUser());
     }
 }

@@ -31,10 +31,10 @@ class AuthServiceImplTest {
     @Test
     void signUpShouldCreateNewUserAndProfile() {
         // given
-        UserSignUpRequest request = new UserSignUpRequest(EMAIL, PASSWORD);
+        final UserSignUpRequest request = new UserSignUpRequest(EMAIL, PASSWORD);
 
         // when
-        int userId = authService.signUp(request);
+        final int userId = authService.signUp(request);
 
         // then
         assertNotNull(userRepository.findById(userId));

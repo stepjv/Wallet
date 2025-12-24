@@ -5,7 +5,7 @@ import com.wallet.dto.request.CurrencyAddRequest;
 import com.wallet.dto.request.TransactionTransferRequest;
 import com.wallet.dto.request.UserSignUpRequest;
 import com.wallet.dto.request.WalletCreateRequest;
-import com.wallet.dto.response.TransactionIdResponse;
+import com.wallet.dto.response.TransactionIdResultResponse;
 import com.wallet.services.*;
 import com.wallet.util.exceptions.IsExistException;
 import lombok.RequiredArgsConstructor;
@@ -90,7 +90,7 @@ public class EnvironmentService {
     }
 
     public CurrencyTestObj initializeOneCurrency() {
-        CurrencyTestObj currency = null;
+        CurrencyTestObj currency = new CurrencyTestObj();
         while (true) {
 
             CurrencyAddRequest request = new CurrencyAddRequest(
@@ -125,7 +125,7 @@ public class EnvironmentService {
         return wallets;
     }
 
-    public TransactionIdResponse initializeOnePendingTransaction(WalletTestObj walletOut, WalletTestObj walletIn, BigDecimal money) {
+    public TransactionIdResultResponse initializeOnePendingTransaction(WalletTestObj walletOut, WalletTestObj walletIn, BigDecimal money) {
         TransactionTransferRequest request = new TransactionTransferRequest(
                 walletOut.getId(), walletIn.getId(), money, DESCRIPTION
         );

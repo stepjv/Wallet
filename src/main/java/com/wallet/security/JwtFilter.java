@@ -3,9 +3,7 @@ package com.wallet.security;
 import com.wallet.models.ProfileEntity;
 import com.wallet.models.UserEntity;
 import com.wallet.repositories.ProfileRepository;
-import com.wallet.repositories.TokenRepository;
 import com.wallet.repositories.UserRepository;
-import com.wallet.util.exceptions.NoAuthException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -54,7 +52,7 @@ public class JwtFilter extends OncePerRequestFilter {
             setInfoToAuthContext(user, profile);
         }
 
-        filterChain.doFilter(request, response); // пускает фильтер дальше 
+        filterChain.doFilter(request, response); // пускает фильтр дальше
     }
 
     private void setInfoToAuthContext(UserEntity user, ProfileEntity profile) {

@@ -12,9 +12,10 @@ public class AuthController {
 
     private final AuthService authService;
 
-    @PostMapping("/signup")
+    @PostMapping("/signup") // return signUpDTO где лежит токен
     public void signUp(@RequestBody UserSignUpRequest request) {
         authService.signUp(request);
     }
 
+    // TODO signIn();
 }

@@ -5,20 +5,20 @@ import com.wallet.dto.request.TransactionGetByWalletIdRequest;
 import com.wallet.dto.request.TransactionReplenishmentRequest;
 import com.wallet.dto.request.TransactionTransferRequest;
 import com.wallet.dto.response.TransactionListResponse;
-import com.wallet.dto.response.TransactionIdResponse;
+import com.wallet.dto.response.TransactionIdResultResponse;
 
 public interface TransactionService {
 
     /// API
-    TransactionIdResponse replenish(int profileId, TransactionReplenishmentRequest request);
+    TransactionIdResultResponse replenish(int profileId, TransactionReplenishmentRequest request);
 
     TransactionListResponse getAllByWalletId(int profileId, TransactionGetByWalletIdRequest request);
 
-    TransactionIdResponse sendTransferRequest(int profileId, TransactionTransferRequest request);
+    TransactionIdResultResponse sendTransferRequest(int profileId, TransactionTransferRequest request);
 
     TransactionListResponse getPendingTransferRequestsByWalletId(int profileId, TransactionGetByWalletIdRequest request);
 
-    TransactionIdResponse acceptTransfer(int profileId, TransactionGetByIdRequest request);
+    TransactionIdResultResponse acceptTransfer(int profileId, TransactionGetByIdRequest request);
 
     /// HELP
 

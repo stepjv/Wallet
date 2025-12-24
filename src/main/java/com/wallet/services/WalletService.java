@@ -1,7 +1,7 @@
 package com.wallet.services;
 
 import com.wallet.dto.request.WalletCreateRequest;
-import com.wallet.dto.response.WalletObjResponse;
+import com.wallet.dto.response.WalletResponse;
 import com.wallet.dto.response.WalletListResponse;
 import com.wallet.enums.status.WalletResponseStatus;
 import com.wallet.models.WalletEntity;
@@ -15,7 +15,7 @@ public interface WalletService {
 
     WalletListResponse getAllWalletsByUserId(int userId);
 
-    WalletObjResponse getDTOById(int walletId);
+    WalletResponse getDTOById(int walletId);
 
     /// HELP
     WalletResponseStatus changeBalance(int walletId, BigDecimal money);
