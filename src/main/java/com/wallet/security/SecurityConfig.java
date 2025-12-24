@@ -21,12 +21,12 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
-            .csrf(AbstractHttpConfigurer::disable) // Отключаем CSRF для API
+            .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(session ->
-                    session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Сессии не нужны
+                    session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/v1/auth/**").permitAll() // Открытые эндпоинты
-                .anyRequest().authenticated() // Все остальное требует токен
+                .requestMatchers("/api/v1/auth/**").permitAll()
+                .anyRequest().authenticated()
             )
                 .addFilterBefore(jwtFilter,
                         org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
@@ -35,6 +35,6 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(); // Нужен для проверки паролей при входе
+        return new BCryptPasswordEncoder();
     }
 }
