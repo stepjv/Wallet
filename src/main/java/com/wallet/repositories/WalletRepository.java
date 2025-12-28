@@ -14,8 +14,8 @@ public interface WalletRepository extends JpaRepository<WalletEntity, Integer> {
     @Query("SELECT COUNT(wallet) > 0 FROM WalletEntity wallet WHERE wallet.checkNumber = :checkNumber")
     boolean existWithCheck(String checkNumber);
 
-    @Query("SELECT wallet FROM WalletEntity wallet WHERE wallet.profile = :profile")
-    List<WalletEntity> findAllByProfile(ProfileEntity profile);
+    @Query("SELECT wallet FROM WalletEntity wallet WHERE wallet.profile.id = :profileId")
+    List<WalletEntity> findAllByProfileId(int profileId);
 
     @Query("SELECT wallet FROM WalletEntity wallet WHERE wallet.id = :id")
     WalletEntity findById(int id);

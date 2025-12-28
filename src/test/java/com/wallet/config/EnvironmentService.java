@@ -3,7 +3,7 @@ package com.wallet.config;
 import com.wallet.config.entity.*;
 import com.wallet.dto.request.CurrencyAddRequest;
 import com.wallet.dto.request.TransactionTransferRequest;
-import com.wallet.dto.request.UserSignUpRequest;
+import com.wallet.dto.request.UserAuthRequest;
 import com.wallet.dto.request.WalletCreateRequest;
 import com.wallet.dto.response.TransactionIdResultResponse;
 import com.wallet.services.*;
@@ -42,13 +42,16 @@ public class EnvironmentService {
         final int passwordLength = 10;
 
         for (int i = 0; i < amountUsers; i++) {
-            UserSignUpRequest request = new UserSignUpRequest(
-                    generateEmail(),
-                    getRandomString(LETTERS_LOWERCASE, passwordLength)
+            String email = generateEmail();
+            String password = getRandomString(LETTERS_LOWERCASE, passwordLength);
+
+            UserAuthRequest request = new UserAuthRequest(
+                    email,
+                    password
             );
             try {
-                int userId = authService.signUp(request);
-                users.add(new UserTestObj(userId));
+                int userId = authService.signUp(request).getUserId();
+                users.add(UserTestObj.fullBuild(userId, email, password));
             } catch (IsExistException e) {
                 i--;
             }
@@ -57,11 +60,11 @@ public class EnvironmentService {
     }
     public List<UserTestObj> initializeSignUp(List<UserTestObj> users) {
         for (UserTestObj user : users){
-            UserSignUpRequest request = new UserSignUpRequest(
+            UserAuthRequest request = new UserAuthRequest(
                     user.getEmail(),
                     user.getPassword()
             );
-            int userId = authService.signUp(request);
+            int userId = authService.signUp(request).getUserId();
             user.setId(userId);
         }
         return users;
@@ -118,7 +121,7 @@ public class EnvironmentService {
             int walletId = walletService.create(
                     profile.getUser().getId(),
                     new WalletCreateRequest(currency.getId())
-            );
+            ).walletId();
             wallets.add(WalletTestObj.buildZeroBalanceWalletByWalletInitializer(walletId, currency, profile));
         }
 

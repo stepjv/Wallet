@@ -13,8 +13,16 @@ public class UserTestObj {
     private String password;
     private Instant createdAt;
 
-    public UserTestObj(int id) {
+
+    public static UserTestObj fullBuild(int id, String email, String password) {
+        return new UserTestObj(id, email, password);
+    }
+
+
+    private UserTestObj(int id, String email, String password) {
         this.id = id;
+        this.email = email;
+        this.password = password;
         this.createdAt = Instant.now();
     }
 }

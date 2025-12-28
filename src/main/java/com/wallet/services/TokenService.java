@@ -5,5 +5,5 @@ import com.wallet.models.TokenEntity;
 public interface TokenService {
 
     /// HELP
-    TokenEntity create();
+    TokenEntity create(int userId);
 }
