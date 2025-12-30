@@ -1,6 +1,7 @@
 package com.wallet.services;
 
 import com.wallet.dto.request.WalletCreateRequest;
+import com.wallet.dto.response.WalletIdResultResponse;
 import com.wallet.dto.response.WalletResponse;
 import com.wallet.dto.response.WalletListResponse;
 import com.wallet.enums.status.WalletResponseStatus;
@@ -11,9 +12,9 @@ import java.math.BigDecimal;
 public interface WalletService {
 
     /// API
-    int create(int userId, WalletCreateRequest request);
+    WalletIdResultResponse create(int userId, WalletCreateRequest request);
 
-    WalletListResponse getAllWalletsByUserId(int userId);
+    WalletListResponse getAllWalletsByProfileId(int profileId);
 
     WalletResponse getDTOById(int walletId);
 

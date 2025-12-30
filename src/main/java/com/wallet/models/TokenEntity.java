@@ -11,7 +11,7 @@ import java.time.Instant;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "token")
+@Table(name = "tokens")
 public class TokenEntity {
 
     @Id
@@ -26,10 +26,21 @@ public class TokenEntity {
     @Column(name = "token")
     private String token;
 
-    @Column(name = "expireAt")
+    @Column(name = "expire_at")
     private Instant expireAt;
 
     @Column(name = "create_at")
     private Instant createAt;
 
+
+    public static TokenEntity build(int userId, String token) {
+        return new TokenEntity(userId, token);
+    }
+
+
+    private TokenEntity(int userId, String token) {
+        this.user = UserEntity.buildById(userId);
+        this.token = token;
+        this.createAt = Instant.now();
+    }
 }

@@ -2,6 +2,9 @@ package com.wallet.models;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.security.crypto.bcrypt.BCrypt;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.Instant;
 
@@ -13,6 +16,7 @@ import java.time.Instant;
 @AllArgsConstructor
 @Table(name = "users")
 public class UserEntity {
+
     @Id
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,6 +27,9 @@ public class UserEntity {
 
     @Column(name = "password")
     private String password;
+
+    @Column(name = "role")
+    private String role;
 
     @Column(name = "created_at")
     private Instant createdAt;
@@ -49,6 +56,7 @@ public class UserEntity {
     private UserEntity(String email, String password) {
         this.email = email;
         this.password = password;
+        this.role = "ROLE_USER";
         this.createdAt = Instant.now();
     }
 

@@ -11,7 +11,7 @@ public class AuthUtil {
                 .getPrincipal();
     }
 
-    public int getProfileId() {
+    public static int getProfileId() {
         final AuthProfileContext context = getCurrent();
         if (context == null) {
             throw new NoAuthException("No auth token");

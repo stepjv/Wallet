@@ -1,6 +1,7 @@
 package com.wallet.services.impl;
 
 import com.wallet.dto.request.WalletCreateRequest;
+import com.wallet.dto.response.WalletIdResultResponse;
 import com.wallet.dto.response.WalletResponse;
 import com.wallet.dto.response.WalletListResponse;
 import com.wallet.enums.status.WalletResponseStatus;
@@ -30,7 +31,7 @@ public class WalletServiceImpl implements WalletService {
     private final ProfileService profileService;
 
     @Override
-    public int create(int userId, WalletCreateRequest request) {
+    public WalletIdResultResponse create(int userId, WalletCreateRequest request) {
         String checkNumber = generateUniqueNumber();
 
         UUID uuid = UUID.randomUUID();
@@ -39,7 +40,10 @@ public class WalletServiceImpl implements WalletService {
 
         final WalletEntity wallet = request.buildWalletEntity(checkNumber, profile, uuid);
 
-        return walletRepository.save(wallet).getId();
+        return new WalletIdResultResponse(
+                walletRepository.save(wallet).getId(),
+                WalletResponseStatus.OK
+        ) ;
     }
 
     @Override
@@ -66,9 +70,8 @@ public class WalletServiceImpl implements WalletService {
     }
 
     @Override
-    public WalletListResponse getAllWalletsByUserId(int userId) {
-        ProfileEntity profile = profileService.getByUserId(userId);
-        List<WalletEntity> wallets = walletRepository.findAllByProfile(profile);
+    public WalletListResponse getAllWalletsByProfileId(int profileId) {
+        List<WalletEntity> wallets = walletRepository.findAllByProfileId(profileId);
         List<WalletResponse> walletResponseList = new ArrayList<>();
 
         if (wallets.isEmpty()) {

@@ -1,4 +1,4 @@
-package com.wallet.services.impl;
+package com.wallet.services;
 
 import com.wallet.WalletApplication;
 import com.wallet.config.EnvironmentService;
@@ -8,7 +8,6 @@ import com.wallet.dto.request.WalletCreateRequest;
 import com.wallet.models.CurrencyEntity;
 import com.wallet.models.WalletEntity;
 import com.wallet.repositories.WalletRepository;
-import com.wallet.services.WalletService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @ComponentScan(basePackages = {"com"})
 @SpringBootTest(classes = {WalletApplication.class})
 @ActiveProfiles("test")
-class WalletServiceImplTest {
+class WalletServiceTest {
 
     @Autowired
     private EnvironmentService environmentService;
