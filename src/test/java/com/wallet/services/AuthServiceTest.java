@@ -52,13 +52,13 @@ class AuthServiceTest {
     }
 
     @Test
-    void logInShouldIdentifyUserAndCreateNewToken() {
+    void signInShouldIdentifyUserAndCreateNewToken() {
         // given
         UserTestObj user = environmentService.initializeSignUp(1).getFirst();
         final UserAuthRequest request = new UserAuthRequest(user.getEmail(), user.getPassword());
 
         // when
-        final UserAuthResponse res = authService.logIn(request);
+        final UserAuthResponse res = authService.signIn(request);
 
         // then
         assertEquals(

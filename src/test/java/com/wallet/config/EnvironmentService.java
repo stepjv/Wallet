@@ -93,7 +93,7 @@ public class EnvironmentService {
     }
 
     public CurrencyTestObj initializeOneCurrency() {
-        CurrencyTestObj currency = new CurrencyTestObj();
+        CurrencyTestObj currency;
         while (true) {
 
             CurrencyAddRequest request = new CurrencyAddRequest(
@@ -101,12 +101,12 @@ public class EnvironmentService {
                     getRandomString(LETTERS_UPPERCASE, CURRENCY_CODE_LENGTH)
             );
             try {
-                int currencyId = currencyService.add(request);
+                int currencyId = currencyService.add(request).id();
 
                 currency = new CurrencyTestObj(currencyId);
 
                 break;
-            } catch (IsExistException e) {}
+            } catch (IsExistException ignored) {}
 
         }
         return currency;

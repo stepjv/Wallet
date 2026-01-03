@@ -8,5 +8,5 @@ public interface AuthService {
     /// API
     UserAuthResponse signUp(UserAuthRequest request);
 
-    UserAuthResponse logIn(UserAuthRequest request);
+    UserAuthResponse signIn(UserAuthRequest request);
 }

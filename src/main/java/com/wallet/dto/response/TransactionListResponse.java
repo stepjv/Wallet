@@ -3,12 +3,11 @@ package com.wallet.dto.response;
 import com.wallet.enums.status.TransactionResponseStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
 
 @Data
 @AllArgsConstructor
 public class TransactionListResponse {
-    private List<TransactionResponse> transactionResponseList;
+    private Page<TransactionResponse> transactionResponseList;
     private TransactionResponseStatus transactionResponseStatus;
 }

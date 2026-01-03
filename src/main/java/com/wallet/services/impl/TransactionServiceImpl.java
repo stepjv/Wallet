@@ -1,9 +1,6 @@
 package com.wallet.services.impl;
 
-import com.wallet.dto.request.TransactionGetByIdRequest;
-import com.wallet.dto.request.TransactionGetByWalletIdRequest;
-import com.wallet.dto.request.TransactionReplenishmentRequest;
-import com.wallet.dto.request.TransactionTransferRequest;
+import com.wallet.dto.request.*;
 import com.wallet.dto.response.TransactionListResponse;
 import com.wallet.dto.response.TransactionIdResultResponse;
 import com.wallet.dto.response.TransactionResponse;
@@ -14,13 +11,16 @@ import com.wallet.models.TransactionEntity;
 import com.wallet.repositories.TransactionRepository;
 import com.wallet.services.TransactionService;
 import com.wallet.services.WalletService;
+import com.wallet.services.transactional.TransactionTransactionalService;
 import com.wallet.util.RandomNumberGenerator;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 
 import static com.wallet.enums.status.TransactionResponseStatus.*;
@@ -31,6 +31,7 @@ public class TransactionServiceImpl implements TransactionService {
 
     private final TransactionRepository transactionRepository;
     private final WalletService walletService;
+    private final TransactionTransactionalService transactionalService;
 
     @Override
     public TransactionIdResultResponse replenish(int profileId, TransactionReplenishmentRequest request) {
@@ -42,57 +43,40 @@ public class TransactionServiceImpl implements TransactionService {
         String transactionNumber = generateUniqueNumber();
         TransactionEntity transaction = request.buildTransactionEntity(transactionNumber);
 
-        WalletResponseStatus walletResponseStatus = walletService.changeBalance(
-                transaction.getPayeeWallet().getId(),
-                transaction.getTransferMoneyCount()
-        );
-
-        TransactionResponseStatus transactionResponseStatus = walletResponseStatus.getTransactionResponseStatus();
-
-        if (transactionResponseStatus == OK) {
-            transaction.setStatus(TransactionStatus.COMPLETED);
-        } else {
-            transaction.setStatus(TransactionStatus.CANCELLED);
-        }
-
-        int transactionId = transactionRepository.save(transaction).getId();
-        return new TransactionIdResultResponse(transactionId, transactionResponseStatus);
+        return transactionalService.replenish(transaction);
     }
 
-    public TransactionListResponse getAllByWalletId(int profileId, TransactionGetByWalletIdRequest request) {
+    @Override
+    public TransactionListResponse getTransactionsByFilter(int profileId, TransactionSearchCriteriaRequest request) {
+        Pageable pageable = PageRequest.of(
+                request.getPageNumber(),
+                request.getPageSize(),
+                Sort.by("id").ascending()
+        );
 
-        if (walletService.isWalletIdNotOwnedByProfileId(profileId, request.walletId())) {
-            return new TransactionListResponse(Collections.emptyList(), CANCELLED_PROFILE_NOT_OWN_THIS_WALLET);
+        if (request.getStatus() != null) {
+            return getAllByWalletIdAndStatus(profileId, request, pageable);
         }
 
-        List<TransactionEntity> transactions = transactionRepository.findAllByWalletId(request.walletId());
-        if (transactions.isEmpty()) {
-            return new TransactionListResponse(Collections.emptyList(), OK) ;
-        }
+        return getAllByWalletId(profileId, request.getWalletId(), pageable);
 
-        List<TransactionResponse> transactionsDTO = new ArrayList<>();
-        for (TransactionEntity transaction : transactions) {
-            transactionsDTO.add(new TransactionResponse(transaction));
-        }
-
-        return new TransactionListResponse(transactionsDTO, OK);
     }
 
     @Override
     public TransactionIdResultResponse sendTransferRequest(int profileId, TransactionTransferRequest request) {
 
-        if(walletService.isWalletIdNotOwnedByProfileId(profileId, request.transferOutWalletId())) {
+        if (walletService.isWalletIdNotOwnedByProfileId(profileId, request.transferOutWalletId())) {
             return new TransactionIdResultResponse(CANCELLED_PROFILE_NOT_OWN_THIS_WALLET);
         }
 
-        TransactionEntity transaction = request.buildTransactionEntity(generateUniqueNumber());
+        final TransactionEntity transaction = request.buildTransactionEntity(generateUniqueNumber());
 
-        WalletResponseStatus walletResponseStatus = walletService.canTransfer(
+        final WalletResponseStatus walletResponseStatus = walletService.canTransfer(
                 transaction.getSenderWallet().getId(),
                 transaction.getTransferMoneyCount().negate()
         );
 
-        TransactionResponseStatus transactionResponseStatus = walletResponseStatus.getTransactionResponseStatus();
+        final TransactionResponseStatus transactionResponseStatus = walletResponseStatus.getTransactionResponseStatus();
 
         if (transactionResponseStatus == OK) {
             transaction.setStatus(TransactionStatus.PENDING);
@@ -105,59 +89,65 @@ public class TransactionServiceImpl implements TransactionService {
         return new TransactionIdResultResponse(transactionId, transactionResponseStatus);
     }
 
-    @Override
-    public TransactionListResponse getPendingTransferRequestsByWalletId(int profileId, TransactionGetByWalletIdRequest request) {
-
-        if (walletService.isWalletIdNotOwnedByProfileId(profileId, request.walletId())) {
-            return new TransactionListResponse(Collections.emptyList(), CANCELLED_PROFILE_NOT_OWN_THIS_WALLET);
-        }
-
-        List<TransactionEntity> transactions = transactionRepository.findAllByWalletIdAndTransactionStatus(
-                request.walletId(), TransactionStatus.PENDING
-        );
+    @NonNull
+    private TransactionListResponse getTransactionListResponse(Page<TransactionEntity> transactions) {
         if (transactions.isEmpty()) {
-            return new TransactionListResponse(Collections.emptyList(), OK) ;
+            return new TransactionListResponse(Page.empty(), OK);
         }
 
-        List<TransactionResponse> transactionsDTO = new ArrayList<>();
-        for (TransactionEntity transaction : transactions) {
-            transactionsDTO.add(new TransactionResponse(transaction));
-        }
-
-        return new TransactionListResponse(transactionsDTO, OK);
+        return new TransactionListResponse(transactions
+                .map(TransactionResponse::build),
+                OK
+        );
     }
 
     @Override
     public TransactionIdResultResponse acceptTransfer(int profileId, TransactionGetByIdRequest request) {
-        Optional<TransactionEntity> transaction = transactionRepository.findById(request.transactionId());
+        final Optional<TransactionEntity> transaction = transactionRepository.findById(request.transactionId());
         if (transaction.isEmpty()) {
             return new TransactionIdResultResponse(CANCELLED_TRANSACTION_NOT_EXIST);
         }
-        int payeeWalletId = transaction.get().getPayeeWallet().getId();
+        final int payeeWalletId = transaction.get().getPayeeWallet().getId();
 
         if (walletService.isWalletIdNotOwnedByProfileId(profileId, payeeWalletId)) {
             return new TransactionIdResultResponse(CANCELLED_PROFILE_NOT_OWN_THIS_WALLET);
         }
 
-        WalletResponseStatus walletResponseStatus = walletService.changeBalance(
-                transaction.get().getSenderWallet().getId(), transaction.get().getTransferMoneyCount().negate()
-        );
-
-        if (walletResponseStatus == WalletResponseStatus.OK) {
-            walletResponseStatus = walletService.changeBalance(
-                    payeeWalletId, transaction.get().getTransferMoneyCount()
-            );
-        }
-
-        TransactionResponseStatus transactionResponseStatus = walletResponseStatus.getTransactionResponseStatus();
-
-        transaction.get().setStatus(TransactionStatus.getByTransactionResponseStatus(transactionResponseStatus));
-
-        int transactionId = transactionRepository.save(transaction.get()).getId();
-        return new TransactionIdResultResponse(transactionId, transactionResponseStatus);
+        return transactionalService.acceptTransfer(transaction.get());
     }
 
-    /// INTERNAL HELP
+    /// ITERNAL HELP
+
+    private TransactionListResponse getAllByWalletIdAndStatus(
+            int profileId, TransactionSearchCriteriaRequest request, Pageable pageable) {
+
+        if (walletService.isWalletIdNotOwnedByProfileId(profileId, request.getWalletId())) {
+            return new TransactionListResponse(Page.empty(), CANCELLED_PROFILE_NOT_OWN_THIS_WALLET);
+        }
+
+        Page<TransactionEntity> transactions = transactionRepository.findAllByWalletIdAndTransactionStatus(
+                request.getWalletId(),
+                request.getStatus(),
+                pageable
+        );
+
+        return getTransactionListResponse(transactions);
+    }
+
+    private TransactionListResponse getAllByWalletId(
+            int profileId, int walletId, Pageable pageable) {
+
+        if (walletService.isWalletIdNotOwnedByProfileId(profileId, walletId)) {
+            return new TransactionListResponse(Page.empty(), CANCELLED_PROFILE_NOT_OWN_THIS_WALLET);
+        }
+
+        Page<TransactionEntity> transactions = transactionRepository.findAllByWalletId(
+                walletId,
+                pageable
+        );
+
+        return getTransactionListResponse(transactions);
+    }
 
     private String generateUniqueNumber() {
         String uniqueNumber = RandomNumberGenerator.getTransactionNumber();
@@ -166,4 +156,5 @@ public class TransactionServiceImpl implements TransactionService {
         }
         return uniqueNumber;
     }
+
 }

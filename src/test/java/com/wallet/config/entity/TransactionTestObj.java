@@ -2,8 +2,6 @@ package com.wallet.config.entity;
 
 import com.wallet.enums.TransactionStatus;
 import com.wallet.enums.TransactionType;
-import com.wallet.models.WalletEntity;
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

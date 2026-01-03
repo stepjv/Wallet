@@ -14,7 +14,13 @@ public class WalletResponse {
     private final CurrencyResponse currency;
     private final ProfileResponse profile;
 
-    public WalletResponse(WalletEntity w) {
+
+    public static WalletResponse build(WalletEntity w) {
+        return new WalletResponse(w);
+    }
+
+
+    private WalletResponse(WalletEntity w) {
         this.id = w.getId();
         this.uuid = w.getUuid();
         this.checkNumber = w.getCheckNumber();

@@ -69,7 +69,8 @@ public class TransactionEntity {
     }
 
 
-    private TransactionEntity(String number, BigDecimal transferMoneyCount, TransactionStatus status, TransactionType type, String description, int walletId) {
+    private TransactionEntity(String number, BigDecimal transferMoneyCount, TransactionStatus status,
+                              TransactionType type, String description, int walletId) {
         this.number = number;
         this.transferMoneyCount = transferMoneyCount;
         this.description = description;
@@ -78,7 +79,9 @@ public class TransactionEntity {
         this.type = type;
     }
 
-    private TransactionEntity(int senderWalletId, int payeeWalletId, String number, BigDecimal transferMoneyCount, TransactionStatus status, TransactionType type, String description) {
+    private TransactionEntity(int senderWalletId, int payeeWalletId, String number,
+                              BigDecimal transferMoneyCount, TransactionStatus status,
+                              TransactionType type, String description) {
         this.number = number;
         this.transferMoneyCount = transferMoneyCount;
         this.description = description;
