@@ -6,12 +6,10 @@ import com.wallet.enums.AuthStatus;
 import com.wallet.models.UserEntity;
 import com.wallet.repositories.UserRepository;
 import com.wallet.services.AuthService;
-import com.wallet.services.ProfileService;
 import com.wallet.services.TokenService;
+import com.wallet.services.transactional.AuthTransactionalService;
 import com.wallet.util.exceptions.IsExistException;
-import com.wallet.util.exceptions.NotExistException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -22,38 +20,25 @@ import java.util.Optional;
 public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
-    private final ProfileService profileService;
     private final TokenService tokenService;
     private final PasswordEncoder passwordEncoder;
+    private final AuthTransactionalService transactionalService; // создал отдельный класс чтобы не было circular dependency
+
 
     @Override
     public UserAuthResponse signUp(UserAuthRequest request) {
-
         if (userRepository.existUserByEmail(request.email())) {
             throw new IsExistException();
         }
 
-        System.out.println(request.password());
-
         final UserEntity newUser = request.buildUserEntity();
-
-        System.out.println(newUser.getPassword());
-
-        int userId = userRepository.save(newUser).getId();
-
-        profileService.create(newUser);
-
-        String token = tokenService.create(userId).getToken();
-
-
-
-        return new UserAuthResponse(userId, token, AuthStatus.OK);
+        return transactionalService.signUp(newUser);
     }
 
     @Override
-    public UserAuthResponse logIn(UserAuthRequest request) {
+    public UserAuthResponse signIn(UserAuthRequest request) {
 
-        Optional<UserEntity> user = userRepository.findByEmail(
+        final Optional<UserEntity> user = userRepository.findByEmail(
                 request.email()
         );
 
@@ -61,13 +46,16 @@ public class AuthServiceImpl implements AuthService {
             return new UserAuthResponse(AuthStatus.CANCELLED_NOT_EXIST);
         }
 
-        boolean isCorrectPassword = passwordEncoder.matches(request.password(), user.get().getPassword());
-        if (!isCorrectPassword) {
+        if (isNotCorrectPassword(request.password(), user.get().getPassword())) {
             return new UserAuthResponse(AuthStatus.CANCELLED_INCORRECTED_PASSWORD);
         }
 
         String token = tokenService.create(user.get().getId()).getToken();
 
         return new UserAuthResponse(user.get().getId(), token, AuthStatus.OK);
+    }
+
+    private boolean isNotCorrectPassword(String inputPassword, String realPassword) {
+        return !passwordEncoder.matches(inputPassword, realPassword);
     }
 }

@@ -29,18 +29,10 @@ public class ProfileEntity {
     private UserEntity user;
 
 
-    public static ProfileEntity buildById(int id) {
-        return new ProfileEntity(id);
-    }
-
     public static ProfileEntity buildNewProfile(String fullName, UserEntity user) {
         return new ProfileEntity(fullName, user);
     }
 
-
-    private ProfileEntity(int id) {
-        this.id = id;
-    }
 
     private ProfileEntity(String fullName, UserEntity user) {
         this.fullName = fullName;

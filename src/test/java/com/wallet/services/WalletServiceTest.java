@@ -33,14 +33,10 @@ class WalletServiceTest {
     private final static int PROFILES_AMOUNT = 3;
     private final static int CURRENCIES_AMOUNT = 3;
 
-    private List<ProfileTestObj> profiles;
-    private List<CurrencyTestObj> currencies;
-
     @BeforeEach
     void setUp() {
-        profiles = environmentService.initializeProfiles(PROFILES_AMOUNT);
-
-        currencies = environmentService.initializeCurrencies(CURRENCIES_AMOUNT);
+        environmentService.initializeProfiles(PROFILES_AMOUNT);
+        environmentService.initializeCurrencies(CURRENCIES_AMOUNT);
     }
 
 

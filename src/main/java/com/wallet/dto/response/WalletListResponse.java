@@ -2,11 +2,10 @@ package com.wallet.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
 
 @Data
 @AllArgsConstructor
 public class WalletListResponse {
-    private List<WalletResponse> walletResponseList;
+    private Page<WalletResponse> walletResponseList;
 }

@@ -3,7 +3,6 @@ package com.wallet.dto.request;
 import com.wallet.enums.TransactionStatus;
 import com.wallet.enums.TransactionType;
 import com.wallet.models.TransactionEntity;
-
 import java.math.BigDecimal;
 
 public record TransactionTransferRequest(int transferOutWalletId, int transferInWalletId, BigDecimal transferAmount, String description) {
