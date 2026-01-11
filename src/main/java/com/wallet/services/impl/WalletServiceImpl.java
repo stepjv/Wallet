@@ -18,13 +18,14 @@ import com.wallet.util.exceptions.BalanceExceededException;
 import com.wallet.util.exceptions.NegativeBalanceException;
 import com.wallet.util.exceptions.NotExistException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 
@@ -43,7 +44,7 @@ public class WalletServiceImpl implements WalletService {
     public WalletIdResultResponse create(int userId, WalletCreateRequest request) {
         final String checkNumber = generateUniqueNumber();
 
-        if (currencyService.isExist(request.currencyId())) {
+        if (currencyService.isNotExist(request.currencyId())) {
             return new WalletIdResultResponse(WalletResponseStatus.CANCELLED_CURRENCY_IS_NOT_EXIST);
         }
 
@@ -91,7 +92,7 @@ public class WalletServiceImpl implements WalletService {
                 Sort.by("id").ascending()
         );
 
-        final Page<WalletEntity> wallets = walletRepository.findAllByProfileId(profileId, pageable);
+        final List<WalletEntity> wallets = walletRepository.findAllByProfileId(profileId, pageable);
 
         return getWalletListResponse(wallets);
     }
@@ -135,13 +136,15 @@ public class WalletServiceImpl implements WalletService {
 
     /// INTERNAL HELP
 
-    private WalletListResponse getWalletListResponse(Page<WalletEntity> wallets) {
+    private WalletListResponse getWalletListResponse(List<WalletEntity> wallets) {
         if (wallets.isEmpty()) {
-            return new WalletListResponse(Page.empty());
+            return new WalletListResponse(Collections.emptyList());
         }
 
-        return new WalletListResponse(wallets.
-                map(WalletResponse::build)
+        return new WalletListResponse(
+                wallets.stream()
+                .map(WalletResponse::build)
+                .toList()
         );
     }
 

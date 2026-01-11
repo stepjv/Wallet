@@ -6,14 +6,18 @@ import com.wallet.enums.AuthStatus;
 import com.wallet.models.UserEntity;
 import com.wallet.repositories.UserRepository;
 import com.wallet.services.AuthService;
+import com.wallet.services.ProfileService;
 import com.wallet.services.TokenService;
-import com.wallet.services.transactional.AuthTransactionalService;
-import com.wallet.util.exceptions.IsExistException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+
+import static com.wallet.enums.AuthStatus.CANCELLED_EMAIL_IS_ALREADY_EXIST;
 
 @Service
 @RequiredArgsConstructor
@@ -22,17 +26,30 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final TokenService tokenService;
     private final PasswordEncoder passwordEncoder;
-    private final AuthTransactionalService transactionalService; // создал отдельный класс чтобы не было circular dependency
+    private final ProfileService profileService;
 
+    @Lazy
+    @Autowired
+    private AuthServiceImpl self;
 
     @Override
     public UserAuthResponse signUp(UserAuthRequest request) {
         if (userRepository.existUserByEmail(request.email())) {
-            throw new IsExistException();
+            return new UserAuthResponse(CANCELLED_EMAIL_IS_ALREADY_EXIST);
         }
 
         final UserEntity newUser = request.buildUserEntity();
-        return transactionalService.signUp(newUser);
+        return self.signUpTrs(newUser);
+    }
+
+
+    @Transactional
+    public UserAuthResponse signUpTrs(UserEntity newUser) {
+        final int userId = userRepository.save(newUser).getId();
+        profileService.create(newUser);
+        final String token = tokenService.create(userId).getToken();
+
+        return new UserAuthResponse(userId, token, AuthStatus.OK);
     }
 
     @Override

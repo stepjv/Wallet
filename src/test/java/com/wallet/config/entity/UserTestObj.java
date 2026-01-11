@@ -5,8 +5,6 @@ import lombok.*;
 import java.time.Instant;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class UserTestObj {
     private int id;
     private String email;
@@ -14,13 +12,23 @@ public class UserTestObj {
     private Instant createdAt;
 
 
-    public static UserTestObj fullBuild(int id, String email, String password) {
+    public static UserTestObj buildWithId(int id, String email, String password) {
         return new UserTestObj(id, email, password);
+    }
+
+    public static UserTestObj build(String email, String password) {
+        return new UserTestObj(email, password);
     }
 
 
     private UserTestObj(int id, String email, String password) {
         this.id = id;
+        this.email = email;
+        this.password = password;
+        this.createdAt = Instant.now();
+    }
+
+    private UserTestObj(String email, String password) {
         this.email = email;
         this.password = password;
         this.createdAt = Instant.now();

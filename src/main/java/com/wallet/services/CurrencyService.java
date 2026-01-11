@@ -10,6 +10,6 @@ public interface CurrencyService {
 
     /// HELP
 
-    boolean isExist(int id);
+    boolean isNotExist(int id);
 
 }

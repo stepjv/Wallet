@@ -28,7 +28,7 @@ public class CurrencyServiceImpl implements CurrencyService {
     }
 
     @Override
-    public boolean isExist(int id) {
-        return currencyRepository.existsById(id);
+    public boolean isNotExist(int id) {
+        return !currencyRepository.existsById(id);
     }
 }

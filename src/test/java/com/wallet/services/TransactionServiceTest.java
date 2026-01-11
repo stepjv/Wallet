@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @ComponentScan(basePackages = {"com"})
 @SpringBootTest(classes = {WalletApplication.class})
 @ActiveProfiles("test")
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD) // дроп бд после каждого теста
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class TransactionServiceTest {
 
     @Autowired
@@ -71,7 +71,6 @@ class TransactionServiceTest {
 
         // when
         final TransactionIdResultResponse res = transactionService.replenish(wallet.getProfile().getId(), request);
-
 
         // then
         final WalletEntity walletAfterTransaction = walletRepository.findById(walletId);
@@ -148,6 +147,49 @@ class TransactionServiceTest {
     }
 
     /**
+     * Тест перевода другим пользователем (фейк запрос/фейк пользователь)
+     */
+    @Test
+    void sendTransferShouldReturnCancelledProfileNotOwnThisWallet() {
+        // given
+        WalletEntity transferOutWallet = walletRepository.findById(1);
+        final WalletEntity transferInWallet = walletRepository.findById(2);
+        final int incorrectProfileId = transferOutWallet.getId() + transferInWallet.getId();
+
+        transactionService.replenish(
+                transferOutWallet.getProfile().getId(),
+                new TransactionReplenishmentRequest(transferOutWallet.getId(), TRANSFER_MONEY_COUNT, DESCRIPTION)
+        );
+
+        transferOutWallet = walletRepository.findById(1);
+
+        final TransactionTransferRequest request = new TransactionTransferRequest(
+                transferOutWallet.getId(),
+                transferInWallet.getId(),
+                TRANSFER_MONEY_COUNT,
+                DESCRIPTION);
+
+        // when
+        final TransactionIdResultResponse res = transactionService.sendTransferRequest(
+                incorrectProfileId,
+                request
+        );
+
+        // then
+        assertEquals(TransactionResponseStatus.CANCELLED_PROFILE_NOT_OWN_THIS_WALLET, res.status());
+
+        assertEquals(
+                transferOutWallet.getBalance(),
+                walletRepository.findById(transferOutWallet.getId()).getBalance()
+        );
+
+        assertEquals(
+                transferInWallet.getBalance(),
+                walletRepository.findById(transferInWallet.getId()).getBalance()
+        );
+    }
+
+    /**
      * Создает транзакцию со статусом cancelled из-за недостаточного баланса кошелька отправителя
      */
     @Test
@@ -157,7 +199,8 @@ class TransactionServiceTest {
         final int transferInWalletId = 2;
 
         final TransactionTransferRequest request = new TransactionTransferRequest(
-                transferOutWallet.getId(), transferInWalletId,
+                transferOutWallet.getId(),
+                transferInWalletId,
                 TRANSFER_MONEY_COUNT, DESCRIPTION
         );
 
