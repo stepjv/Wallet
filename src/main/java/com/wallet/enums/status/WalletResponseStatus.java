@@ -7,7 +7,8 @@ public enum WalletResponseStatus {
     OK(TransactionResponseStatus.OK),
     CANCELLED_DATA_BASE_ERROR(TransactionResponseStatus.CANCELLED_DATA_BASE_ERROR),
     CANCELLED_BALANCE_EXCEEDED(TransactionResponseStatus.CANCELLED_BALANCE_EXCEEDED),
-    CANCELLED_NEGATIVE_BALANCE(TransactionResponseStatus.CANCELLED_NEGATIVE_BALANCE);
+    CANCELLED_NEGATIVE_BALANCE(TransactionResponseStatus.CANCELLED_NEGATIVE_BALANCE),
+    CANCELLED_CURRENCY_IS_NOT_EXIST(null);
 
     private final TransactionResponseStatus transactionResponseStatus;
 

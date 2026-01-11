@@ -20,7 +20,13 @@ public class TransactionResponse {
     private final WalletResponse senderWallet;
     private final WalletResponse payeeWallet;
 
-    public TransactionResponse(TransactionEntity t) {
+
+    public static TransactionResponse build(TransactionEntity t) {
+        return new TransactionResponse(t);
+    }
+
+
+    private TransactionResponse(TransactionEntity t) {
         this.id = t.getId();
         this.number = t.getNumber();
         this.moneyCount = t.getTransferMoneyCount();
@@ -28,8 +34,8 @@ public class TransactionResponse {
         this.type = t.getType();
         this.description = t.getDescription();
         this.createdAt = t.getCreatedAt();
-        this.senderWallet = new WalletResponse(t.getSenderWallet());
-        this.payeeWallet = new WalletResponse(t.getPayeeWallet());
+        this.senderWallet = WalletResponse.build(t.getSenderWallet());
+        this.payeeWallet = WalletResponse.build(t.getPayeeWallet());
     }
 }
 

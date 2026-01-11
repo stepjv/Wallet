@@ -2,10 +2,9 @@ package com.wallet.services;
 
 import com.wallet.WalletApplication;
 import com.wallet.config.EnvironmentService;
-import com.wallet.config.entity.CurrencyTestObj;
-import com.wallet.config.entity.ProfileTestObj;
 import com.wallet.dto.request.WalletCreateRequest;
-import com.wallet.models.CurrencyEntity;
+import com.wallet.dto.response.WalletIdResultResponse;
+import com.wallet.enums.status.WalletResponseStatus;
 import com.wallet.models.WalletEntity;
 import com.wallet.repositories.WalletRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,14 +12,15 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
-import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 @ComponentScan(basePackages = {"com"})
 @SpringBootTest(classes = {WalletApplication.class})
 @ActiveProfiles("test")
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class WalletServiceTest {
 
     @Autowired
@@ -33,31 +33,48 @@ class WalletServiceTest {
     private final static int PROFILES_AMOUNT = 3;
     private final static int CURRENCIES_AMOUNT = 3;
 
-    private List<ProfileTestObj> profiles;
-    private List<CurrencyTestObj> currencies;
-
     @BeforeEach
     void setUp() {
-        profiles = environmentService.initializeProfiles(PROFILES_AMOUNT);
-
-        currencies = environmentService.initializeCurrencies(CURRENCIES_AMOUNT);
+        environmentService.initializeProfiles(PROFILES_AMOUNT);
+        environmentService.initializeCurrencies(CURRENCIES_AMOUNT);
     }
 
+    /// create();
 
     @Test
     void createShouldCreateNewWallet() {
         //given
-        final int profileId = 1;
+        final int userId = 1;
         final int currencyId = 1;
 
-        final CurrencyEntity currency = CurrencyEntity.buildById(currencyId);
-        final WalletCreateRequest request = new WalletCreateRequest(currency.getId());
+        final WalletCreateRequest request = new WalletCreateRequest(currencyId);
 
         //when
-        walletService.create(profileId, request);
+        WalletIdResultResponse res = walletService.create(userId, request);
 
         //then
-        final WalletEntity res = walletRepository.findByProfileId(profileId);
-        assertNotNull(res);
+        final WalletEntity newWallet = walletRepository.findByUserId(userId);
+        assertNotNull(newWallet);
+        assertEquals(WalletResponseStatus.OK, res.status());
+    }
+
+    /**
+     * Тест с несуществующей валютой
+     */
+    @Test
+    void createShouldReturnCancelledCurrencyIsNotExist() {
+        //given
+        final int userId = 1;
+        final int incorrectCurrencyId = 99999;
+
+        final WalletCreateRequest request = new WalletCreateRequest(incorrectCurrencyId);
+
+        //when
+        WalletIdResultResponse res = walletService.create(userId, request);
+
+        //then
+        final WalletEntity newWallet = walletRepository.findByUserId(userId);
+        assertNull(newWallet);
+        assertEquals(WalletResponseStatus.CANCELLED_CURRENCY_IS_NOT_EXIST, res.status());
     }
 }

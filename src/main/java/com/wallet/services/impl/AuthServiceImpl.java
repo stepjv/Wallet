@@ -8,52 +8,54 @@ import com.wallet.repositories.UserRepository;
 import com.wallet.services.AuthService;
 import com.wallet.services.ProfileService;
 import com.wallet.services.TokenService;
-import com.wallet.util.exceptions.IsExistException;
-import com.wallet.util.exceptions.NotExistException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+
+import static com.wallet.enums.AuthStatus.CANCELLED_EMAIL_IS_ALREADY_EXIST;
 
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
-    private final ProfileService profileService;
     private final TokenService tokenService;
     private final PasswordEncoder passwordEncoder;
+    private final ProfileService profileService;
+
+    @Lazy
+    @Autowired
+    private AuthServiceImpl self;
 
     @Override
     public UserAuthResponse signUp(UserAuthRequest request) {
-
         if (userRepository.existUserByEmail(request.email())) {
-            throw new IsExistException();
+            return new UserAuthResponse(CANCELLED_EMAIL_IS_ALREADY_EXIST);
         }
 
-        System.out.println(request.password());
-
         final UserEntity newUser = request.buildUserEntity();
+        return self.signUpTrs(newUser);
+    }
 
-        System.out.println(newUser.getPassword());
 
-        int userId = userRepository.save(newUser).getId();
-
+    @Transactional
+    public UserAuthResponse signUpTrs(UserEntity newUser) {
+        final int userId = userRepository.save(newUser).getId();
         profileService.create(newUser);
-
-        String token = tokenService.create(userId).getToken();
-
-
+        final String token = tokenService.create(userId).getToken();
 
         return new UserAuthResponse(userId, token, AuthStatus.OK);
     }
 
     @Override
-    public UserAuthResponse logIn(UserAuthRequest request) {
+    public UserAuthResponse signIn(UserAuthRequest request) {
 
-        Optional<UserEntity> user = userRepository.findByEmail(
+        final Optional<UserEntity> user = userRepository.findByEmail(
                 request.email()
         );
 
@@ -61,13 +63,16 @@ public class AuthServiceImpl implements AuthService {
             return new UserAuthResponse(AuthStatus.CANCELLED_NOT_EXIST);
         }
 
-        boolean isCorrectPassword = passwordEncoder.matches(request.password(), user.get().getPassword());
-        if (!isCorrectPassword) {
+        if (isNotCorrectPassword(request.password(), user.get().getPassword())) {
             return new UserAuthResponse(AuthStatus.CANCELLED_INCORRECTED_PASSWORD);
         }
 
         String token = tokenService.create(user.get().getId()).getToken();
 
         return new UserAuthResponse(user.get().getId(), token, AuthStatus.OK);
+    }
+
+    private boolean isNotCorrectPassword(String inputPassword, String realPassword) {
+        return !passwordEncoder.matches(inputPassword, realPassword);
     }
 }
