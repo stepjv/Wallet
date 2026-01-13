@@ -23,7 +23,6 @@ public class EnvironmentService {
 
     private static final String LETTERS_UPPERCASE = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     private static final String LETTERS_LOWERCASE = "abcdefghijklmnopqrstuvwxyz";
-    private static final String DIGITS = "0123456789";
     private static final String EMAIL_DOMAIN = "@mail.ru";
     private static final int CURRENCY_CODE_LENGTH = 3;
     private static final int CURRENCY_NAME_LENGTH = 5;
@@ -51,7 +50,7 @@ public class EnvironmentService {
             );
             try {
                 int userId = authService.signUp(request).getUserId();
-                users.add(UserTestObj.fullBuild(userId, email, password));
+                users.add(UserTestObj.buildWithId(userId, email, password));
             } catch (IsExistException e) {
                 i--;
             }
@@ -93,7 +92,7 @@ public class EnvironmentService {
     }
 
     public CurrencyTestObj initializeOneCurrency() {
-        CurrencyTestObj currency = new CurrencyTestObj();
+        CurrencyTestObj currency;
         while (true) {
 
             CurrencyAddRequest request = new CurrencyAddRequest(
@@ -101,12 +100,12 @@ public class EnvironmentService {
                     getRandomString(LETTERS_UPPERCASE, CURRENCY_CODE_LENGTH)
             );
             try {
-                int currencyId = currencyService.add(request);
+                int currencyId = currencyService.add(request).id();
 
                 currency = new CurrencyTestObj(currencyId);
 
                 break;
-            } catch (IsExistException e) {}
+            } catch (IsExistException ignored) {}
 
         }
         return currency;
@@ -133,6 +132,15 @@ public class EnvironmentService {
                 walletOut.getId(), walletIn.getId(), money, DESCRIPTION
         );
         return transactionService.sendTransferRequest(walletOut.getProfile().getId(), request);
+    }
+
+    public String generateIncorrectPassword(String correctPassword) {
+        StringBuilder incorrectPassword = new StringBuilder();
+        final int shift = 1;
+        for (char ch : correctPassword.toCharArray()) {
+            incorrectPassword.append((char) (ch + shift));
+        }
+        return incorrectPassword.toString();
     }
 
     /// INTERNAL HELP

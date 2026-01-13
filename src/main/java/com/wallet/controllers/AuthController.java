@@ -7,19 +7,18 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
     private final AuthService authService;
 
-    @PostMapping("/signup")
+    @PostMapping("/api/v1/auth/signUp")
     public UserAuthResponse signUp(@RequestBody UserAuthRequest request) {
         return authService.signUp(request);
     }
 
-    @GetMapping("/login")
-    public UserAuthResponse logIn(@RequestBody UserAuthRequest request) {
-        return authService.logIn(request);
+    @GetMapping("/api/v1/auth/signIn")
+    public UserAuthResponse signIn(@RequestBody UserAuthRequest request) {
+        return authService.signIn(request);
     }
 }

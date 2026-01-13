@@ -1,6 +1,7 @@
 package com.wallet.services.impl;
 
 import com.wallet.dto.request.WalletCreateRequest;
+import com.wallet.dto.request.WalletSearchCriteriaRequest;
 import com.wallet.dto.response.WalletIdResultResponse;
 import com.wallet.dto.response.WalletResponse;
 import com.wallet.dto.response.WalletListResponse;
@@ -8,20 +9,28 @@ import com.wallet.enums.status.WalletResponseStatus;
 import com.wallet.models.ProfileEntity;
 import com.wallet.models.WalletEntity;
 import com.wallet.repositories.WalletRepository;
+import com.wallet.services.CurrencyService;
 import com.wallet.services.ProfileService;
 import com.wallet.services.WalletService;
 import com.wallet.util.RandomNumberGenerator;
 import com.wallet.util.Validator;
 import com.wallet.util.exceptions.BalanceExceededException;
 import com.wallet.util.exceptions.NegativeBalanceException;
+import com.wallet.util.exceptions.NotExistException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+
+
+// поставить правильно транзакции
+// в транзакциях не должно выполняться запросов которых ты не контролируешь в данном сервисе
 
 @Service
 @RequiredArgsConstructor
@@ -29,12 +38,17 @@ public class WalletServiceImpl implements WalletService {
 
     private final WalletRepository walletRepository;
     private final ProfileService profileService;
+    private final CurrencyService currencyService;
 
     @Override
     public WalletIdResultResponse create(int userId, WalletCreateRequest request) {
-        String checkNumber = generateUniqueNumber();
+        final String checkNumber = generateUniqueNumber();
 
-        UUID uuid = UUID.randomUUID();
+        if (currencyService.isNotExist(request.currencyId())) {
+            return new WalletIdResultResponse(WalletResponseStatus.CANCELLED_CURRENCY_IS_NOT_EXIST);
+        }
+
+        final UUID uuid = UUID.randomUUID();
 
         final ProfileEntity profile = profileService.getByUserId(userId);
 
@@ -43,13 +57,13 @@ public class WalletServiceImpl implements WalletService {
         return new WalletIdResultResponse(
                 walletRepository.save(wallet).getId(),
                 WalletResponseStatus.OK
-        ) ;
+        );
     }
 
     @Override
     public WalletResponseStatus changeBalance(int walletId, BigDecimal money) {
 
-        WalletEntity wallet = walletRepository.findById(walletId);
+        final WalletEntity wallet = walletRepository.findById(walletId);
 
         try {
 
@@ -70,30 +84,28 @@ public class WalletServiceImpl implements WalletService {
     }
 
     @Override
-    public WalletListResponse getAllWalletsByProfileId(int profileId) {
-        List<WalletEntity> wallets = walletRepository.findAllByProfileId(profileId);
-        List<WalletResponse> walletResponseList = new ArrayList<>();
+    public WalletListResponse getAllWalletsByProfileId(int profileId, WalletSearchCriteriaRequest request) {
 
-        if (wallets.isEmpty()) {
-            return (WalletListResponse) Collections.emptyList();
-        }
+        final Pageable pageable = PageRequest.of(
+                request.getPageNumber(),
+                request.getPageSize(),
+                Sort.by("id").ascending()
+        );
 
-        for (WalletEntity wallet : wallets) {
-            walletResponseList.add(new WalletResponse(wallet));
-        }
+        final List<WalletEntity> wallets = walletRepository.findAllByProfileId(profileId, pageable);
 
-        return new WalletListResponse(walletResponseList);
+        return getWalletListResponse(wallets);
     }
 
     @Override
     public WalletResponse getDTOById(int walletId) {
-        return new WalletResponse(walletRepository.findById(walletId));
+        return WalletResponse.build(getEntityById(walletId));
     }
 
     @Override
     public WalletResponseStatus canTransfer(int walletId, BigDecimal money) {
 
-        WalletEntity wallet = walletRepository.findById(walletId);
+        final WalletEntity wallet = walletRepository.findById(walletId);
 
         try {
 
@@ -110,7 +122,11 @@ public class WalletServiceImpl implements WalletService {
 
     @Override
     public WalletEntity getEntityById(int walletId) {
-        return walletRepository.findById(walletId);
+        final WalletEntity wallet = walletRepository.findById(walletId);
+        if (wallet == null) {
+            throw new NotExistException();
+        }
+        return wallet;
     }
 
     @Override
@@ -119,6 +135,18 @@ public class WalletServiceImpl implements WalletService {
     }
 
     /// INTERNAL HELP
+
+    private WalletListResponse getWalletListResponse(List<WalletEntity> wallets) {
+        if (wallets.isEmpty()) {
+            return new WalletListResponse(Collections.emptyList());
+        }
+
+        return new WalletListResponse(
+                wallets.stream()
+                .map(WalletResponse::build)
+                .toList()
+        );
+    }
 
     private String generateUniqueNumber() {
         String uniqueNumber = RandomNumberGenerator.getWalletCheck();

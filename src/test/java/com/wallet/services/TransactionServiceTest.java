@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.math.BigDecimal;
@@ -30,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @ComponentScan(basePackages = {"com"})
 @SpringBootTest(classes = {WalletApplication.class})
 @ActiveProfiles("test")
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class TransactionServiceTest {
 
     @Autowired
@@ -70,7 +72,6 @@ class TransactionServiceTest {
         // when
         final TransactionIdResultResponse res = transactionService.replenish(wallet.getProfile().getId(), request);
 
-
         // then
         final WalletEntity walletAfterTransaction = walletRepository.findById(walletId);
         final Optional<TransactionEntity> transaction = transactionRepository.findById(res.transactionId());
@@ -83,7 +84,7 @@ class TransactionServiceTest {
      * Пополнения счета другим пользователем (фейк запрос/фейк профиль)
      */
     @Test
-    void replenishShouldReturnCancelledStatusWhenProfileNotOwnThisWallet(){
+    void replenishShouldReturnCancelledStatusWhenProfileNotOwnThisWallet() {
         // given
         final int walletId = 1;
         final WalletEntity wallet = walletRepository.findById(walletId);
@@ -127,12 +128,15 @@ class TransactionServiceTest {
         );
 
         final TransactionTransferRequest request = new TransactionTransferRequest(
-                transferOutWallet.getId(), transferInWalletId,
-                TRANSFER_MONEY_COUNT, DESCRIPTION);
+                transferOutWallet.getId(),
+                transferInWalletId,
+                TRANSFER_MONEY_COUNT,
+                DESCRIPTION);
 
         // when
         final TransactionIdResultResponse response = transactionService.sendTransferRequest(
-                transferOutWallet.getProfile().getId(), request
+                transferOutWallet.getProfile().getId(),
+                request
         );
 
         // then
@@ -140,9 +144,49 @@ class TransactionServiceTest {
 
         assertTrue(res.isPresent());
         assertEquals(TransactionStatus.PENDING, res.get().getStatus());
+    }
 
-        System.out.println(res.get().toString());
-        System.out.println("Response status -> " + response.status());
+    /**
+     * Тест перевода другим пользователем (фейк запрос/фейк пользователь)
+     */
+    @Test
+    void sendTransferShouldReturnCancelledProfileNotOwnThisWallet() {
+        // given
+        WalletEntity transferOutWallet = walletRepository.findById(1);
+        final WalletEntity transferInWallet = walletRepository.findById(2);
+        final int incorrectProfileId = transferOutWallet.getId() + transferInWallet.getId();
+
+        transactionService.replenish(
+                transferOutWallet.getProfile().getId(),
+                new TransactionReplenishmentRequest(transferOutWallet.getId(), TRANSFER_MONEY_COUNT, DESCRIPTION)
+        );
+
+        transferOutWallet = walletRepository.findById(1);
+
+        final TransactionTransferRequest request = new TransactionTransferRequest(
+                transferOutWallet.getId(),
+                transferInWallet.getId(),
+                TRANSFER_MONEY_COUNT,
+                DESCRIPTION);
+
+        // when
+        final TransactionIdResultResponse res = transactionService.sendTransferRequest(
+                incorrectProfileId,
+                request
+        );
+
+        // then
+        assertEquals(TransactionResponseStatus.CANCELLED_PROFILE_NOT_OWN_THIS_WALLET, res.status());
+
+        assertEquals(
+                transferOutWallet.getBalance(),
+                walletRepository.findById(transferOutWallet.getId()).getBalance()
+        );
+
+        assertEquals(
+                transferInWallet.getBalance(),
+                walletRepository.findById(transferInWallet.getId()).getBalance()
+        );
     }
 
     /**
@@ -155,7 +199,8 @@ class TransactionServiceTest {
         final int transferInWalletId = 2;
 
         final TransactionTransferRequest request = new TransactionTransferRequest(
-                transferOutWallet.getId(), transferInWalletId,
+                transferOutWallet.getId(),
+                transferInWalletId,
                 TRANSFER_MONEY_COUNT, DESCRIPTION
         );
 
@@ -168,9 +213,6 @@ class TransactionServiceTest {
         final Optional<TransactionEntity> res = transactionRepository.findById(response.transactionId());
         assertTrue(res.isPresent());
         assertEquals(TransactionStatus.CANCELLED, res.get().getStatus());
-
-        System.out.println(res.get().toString());
-        System.out.println("Response status -> " + response.status());
     }
 
     /// acceptTransfer();
@@ -194,7 +236,9 @@ class TransactionServiceTest {
         );
 
         final int transactionId = environmentService.initializeOnePendingTransaction(
-                walletOut, walletIn, walletOut.getBalance()
+                walletOut,
+                walletIn,
+                walletOut.getBalance()
         ).transactionId();
 
         // when
@@ -204,18 +248,21 @@ class TransactionServiceTest {
         );
 
         // then
-        assertSame(TransactionResponseStatus.OK, res.status());
+        assertAll("проверка пользовалетя 1", // иногда полезно
+                () -> assertSame(TransactionResponseStatus.OK, res.status()),
+                () -> {
+                    final WalletEntity newWalletOut = walletRepository.findById(walletOut.getId());
+                    final WalletEntity newWalletIn = walletRepository.findById(walletIn.getId());
 
-        final WalletEntity newWalletOut = walletRepository.findById(walletOut.getId());
-        final WalletEntity newWalletIn = walletRepository.findById(walletIn.getId());
-
-        assertEquals(
-                walletOut.getBalance().add(walletIn.getBalance()),
-                newWalletIn.getBalance()
-        );
-        assertEquals(
-                walletOut.getBalance().add(TRANSFER_MONEY_COUNT.negate()),
-                newWalletOut.getBalance()
+                    assertEquals(
+                            walletOut.getBalance().add(walletIn.getBalance()),
+                            newWalletIn.getBalance()
+                    );
+                    assertEquals(
+                            walletOut.getBalance().add(TRANSFER_MONEY_COUNT.negate()),
+                            newWalletOut.getBalance()
+                    );
+                }
         );
     }
 }
